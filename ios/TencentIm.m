@@ -59,7 +59,7 @@ RCT_EXPORT_METHOD(login:(NSString *)userID
         NSError *err = [NSError errorWithDomain:@"im.login" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -73,7 +73,7 @@ RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRej
         NSError *err = [NSError errorWithDomain:@"im.logout" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -92,7 +92,7 @@ RCT_EXPORT_METHOD(setSelfInfo:(NSDictionary *)params
         NSError *err = [NSError errorWithDomain:@"im.setSelfInfo" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -110,7 +110,7 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
         NSError *err = [NSError errorWithDomain:@"im.getC2CHistoryMessageList" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -131,7 +131,7 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
         NSError *err = [NSError errorWithDomain:@"im.getConversationList" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -148,7 +148,7 @@ RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
         NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -166,7 +166,7 @@ RCT_EXPORT_METHOD(sendC2CCustomMessage:(NSString *)userID
         NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -184,7 +184,7 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)userID
         NSError *err = [NSError errorWithDomain:@"im.sendImageMessage" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -203,7 +203,7 @@ RCT_EXPORT_METHOD(sendSoundMessage:(NSString *)userID
         NSError *err = [NSError errorWithDomain:@"im.sendSoundMessage" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -220,7 +220,7 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
         NSError *err = [NSError errorWithDomain:@"im.sendGroupTextMessage" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -240,7 +240,7 @@ RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
         NSError *err = [NSError errorWithDomain:@"im.sendGroupAtTextMessage" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -258,7 +258,7 @@ RCT_EXPORT_METHOD(sendGroupImageMessage:(NSString *)groupID
         NSError *err = [NSError errorWithDomain:@"im.sendImageMessage" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -277,7 +277,7 @@ RCT_EXPORT_METHOD(sendGroupSoundMessage:(NSString *)groupID
         NSError *err = [NSError errorWithDomain:@"im.sendGroupSoundMessage" code:code userInfo:@{
             @"message":desc
         }];
-        reject(@"err", @"err", err);
+        reject([@(code) stringValue], desc, err);
     }];
 }
 
@@ -292,7 +292,7 @@ RCT_EXPORT_METHOD(joinGroup:(NSString *)groupID
             NSError *err = [NSError errorWithDomain:@"im.joinGroup" code:code userInfo:@{
                 @"message":desc
             }];
-            reject(@"err", @"err", err);
+            reject([@(code) stringValue], desc, err);
         }];
     }
 }
@@ -307,7 +307,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
             NSError *err = [NSError errorWithDomain:@"im.quitGroup" code:code userInfo:@{
                 @"message":desc
             }];
-            reject(@"err", @"err", err);
+            reject([@(code) stringValue], desc, err);
         }];
     }
 }
