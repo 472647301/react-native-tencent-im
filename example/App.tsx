@@ -26,7 +26,7 @@ async function initImSdk() {
     {headers: {token}},
   );
   if (res && res.data && res.data.data) {
-    await ImSdk.login('10086', res.data.data.sig).catch(err => {
+    await ImSdk.login('497997365815279600', res.data.data.sig).catch(err => {
       console.log(err);
     });
     await ImSdk.joinGroup(res.data.data.group_id, 'Hello').catch(err => {
