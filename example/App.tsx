@@ -8,15 +8,55 @@
  * https://github.com/facebook/react-native
  */
 
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import {StyleSheet, Text, View, Image} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {ImSdk} from '@byron-react-native/tencent-im';
+import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
+import axios from 'axios';
 
 const Tab = createBottomTabNavigator();
 
+const token =
+  'eyJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjQ5Nzk5NzM2NTgxNTI3OTYxOCwibmFtZSI6IuaAp-aEn-eGn-WlsyIsImlkIjoiVDNOR3lBUXYiLCJleHAiOjE2NTUyMDc4MzN9.JSGlTpE49BveAN-oa2G-1UWopnDmAzG8dQSCyrKwqVvV6bVq7ORvCdASfPkTJHuG0gGLrXRo2DK6T_ek9cNZGvNkDVUGJej9CkSYXnG2MkbXNxve6k-Xz3KQSkFN5y6Dyx7gqfm4yU0zHqL6Z3QLWPo52eAX58XqUqmNlZSo_A4';
+
+async function initImSdk() {
+  const res = await axios.get(
+    'http://web.xiaoquexinapp.com/index/user/loginIm',
+    {headers: {token}},
+  );
+  if (res && res.data && res.data.data) {
+    await ImSdk.login('10086', res.data.data.sig).catch(err => {
+      console.log(err);
+    });
+    await ImSdk.joinGroup(res.data.data.group_id, 'Hello').catch(err => {
+      console.log(err);
+    });
+  }
+}
+
 function GroupChat() {
+  useEffect(() => {
+    const Connecting = ImSdk.addListener(ImSdkEventType.Connecting, () => {
+      console.log(' >> 正在连接到腾讯云服务器');
+    });
+    const ConnectFailed = ImSdk.addListener(
+      ImSdkEventType.ConnectFailed,
+      () => {
+        console.log(' >> 连接腾讯云服务器失败');
+      },
+    );
+    const ConnectSuccess = ImSdk.addListener(
+      ImSdkEventType.ConnectSuccess,
+      () => {
+        console.log(' >> 已经成功连接到腾讯云服务器');
+      },
+    );
+    const NewMessage = ImSdk.addListener(ImSdkEventType.NewMessage, data => {
+      console.log(' >> NewMessage', data);
+    });
+    
+  }, []);
   return (
     <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
       <Text>GroupChat</Text>
@@ -33,6 +73,9 @@ function PrivateChat() {
 }
 
 function App() {
+  useEffect(() => {
+    initImSdk();
+  }, []);
   return (
     <NavigationContainer>
       <Tab.Navigator>

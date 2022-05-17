@@ -210,11 +210,48 @@ declare module "@byron-react-native/tencent-im" {
     draftTimestamp: Date;
   }
 
-  export type ImSdkEventType = "";
+  export enum ImSdkEventType {
+    /**
+     * 正在连接到腾讯云服务器
+     */
+    "Connecting" = "Connecting",
+    /**
+     * 已经成功连接到腾讯云服务器
+     */
+    "ConnectSuccess" = "ConnectSuccess",
+    /**
+     * 连接腾讯云服务器失败
+     */
+    "ConnectFailed" = "ConnectFailed",
+    /**
+     * 当前用户被踢下线
+     */
+    "KickedOffline" = "KickedOffline",
+    /**
+     * 登录票据已经过期
+     */
+    "UserSigExpired" = "UserSigExpired",
+    /**
+     * 当前用户的资料发生了更新
+     */
+    "SelfInfoUpdated" = "SelfInfoUpdated",
+    /**
+     * 新消息通知
+     */
+    "NewMessage" = "NewMessage",
+    /**
+     * 收到会话新增的回调
+     */
+    "NewConversation" = "NewConversation",
+    /**
+     * 收到会话更新的回调
+     */
+    "ConversationChanged" = "ConversationChanged",
+  }
 
   export class ImSdk {
     static initSDK: (
-      sdkAppID: string,
+      sdkAppID: number,
       logLevel?: V2TIMLogLevel
     ) => Promise<void>;
     static login: (userID: string, userSig: string) => Promise<void>;

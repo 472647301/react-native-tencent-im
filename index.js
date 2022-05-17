@@ -44,8 +44,20 @@ export const V2TIMGroupReceiveMessageOpt = {
   V2TIM_GROUP_RECEIVE_NOT_NOTIFY_MESSAGE: 2, ///< 在线正常接收消息，离线不会有推送通知
 };
 
+export const ImSdkEventType = {
+  Connecting: "Connecting",
+  ConnectSuccess: "ConnectSuccess",
+  ConnectFailed: "ConnectFailed",
+  KickedOffline: "KickedOffline",
+  UserSigExpired: "UserSigExpired",
+  SelfInfoUpdated: "SelfInfoUpdated",
+  NewMessage: "NewMessage",
+  NewConversation: "NewConversation",
+  ConversationChanged: "ConversationChanged",
+};
+
 export class ImSdk {
-  static async initSDK(sdkAppID, logLevel) {
+  static async initSDK(sdkAppID, logLevel = 4) {
     return TencentIm.initSDK(sdkAppID, logLevel);
   }
   static async login(userID, userSig) {
