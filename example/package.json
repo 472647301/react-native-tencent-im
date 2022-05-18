@@ -10,7 +10,6 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@byron-react-native/tencent-im": "link:../",
     "axios": "^0.27.2",
     "react": "17.0.2",
     "react-native": "0.68.2",
@@ -21,7 +20,8 @@
   "devDependencies": {
     "@babel/core": "^7.12.9",
     "@babel/runtime": "^7.12.5",
-    "@byron-react-native/refresh-control": "^1.1.2",
+    "@byron-react-native/refresh-control": "^1.1.3",
+    "@byron-react-native/tencent-im": "link:../",
     "@react-native-community/audio-toolkit": "^2.0.3",
     "@react-native-community/eslint-config": "^2.0.0",
     "@react-navigation/native": "^6.0.10",
