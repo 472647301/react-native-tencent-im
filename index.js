@@ -57,7 +57,7 @@ export const ImSdkEventType = {
 };
 
 export class ImSdk {
-  static async initSDK(sdkAppID, logLevel = 4) {
+  static async initSDK(sdkAppID, logLevel = 0) {
     return TencentIm.initSDK(sdkAppID, logLevel);
   }
   static async login(userID, userSig) {
