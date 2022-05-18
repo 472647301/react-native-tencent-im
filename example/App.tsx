@@ -8,74 +8,62 @@
  * https://github.com/facebook/react-native
  */
 
-import React, {useState, useEffect} from 'react';
-import {StyleSheet, Text, View, Image} from 'react-native';
+import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
-import axios from 'axios';
+import {ImSdk} from '@byron-react-native/tencent-im';
+import {ImSdkEventType, V2TIMLogLevel} from '@byron-react-native/tencent-im';
+import GroupChat from './src/pages/GroupChat';
+import PrivateChat from './src/pages/PrivateChat';
+import {EmitterSubscription} from 'react-native';
+import {login_im_sdk, to} from './src/utils';
 
 const Tab = createBottomTabNavigator();
 
-const token =
-  'eyJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjQ5Nzk5NzM2NTgxNTI3OTYxOCwibmFtZSI6IuaAp-aEn-eGn-WlsyIsImlkIjoiVDNOR3lBUXYiLCJleHAiOjE2NTUyMDc4MzN9.JSGlTpE49BveAN-oa2G-1UWopnDmAzG8dQSCyrKwqVvV6bVq7ORvCdASfPkTJHuG0gGLrXRo2DK6T_ek9cNZGvNkDVUGJej9CkSYXnG2MkbXNxve6k-Xz3KQSkFN5y6Dyx7gqfm4yU0zHqL6Z3QLWPo52eAX58XqUqmNlZSo_A4';
-
-async function initImSdk() {
-  const res = await axios.get(
-    'http://web.xiaoquexinapp.com/index/user/loginIm',
-    {headers: {token}},
-  );
-  if (res && res.data && res.data.data) {
-    await ImSdk.login('497997365815279600', res.data.data.sig).catch(err => {
-      console.log(err);
-    });
-    await ImSdk.joinGroup(res.data.data.group_id, 'Hello').catch(err => {
-      console.log(err);
-    });
-  }
-}
-
-function GroupChat() {
-  useEffect(() => {
-    const Connecting = ImSdk.addListener(ImSdkEventType.Connecting, () => {
-      console.log(' >> 正在连接到腾讯云服务器');
-    });
-    const ConnectFailed = ImSdk.addListener(
-      ImSdkEventType.ConnectFailed,
-      () => {
-        console.log(' >> 连接腾讯云服务器失败');
-      },
-    );
-    const ConnectSuccess = ImSdk.addListener(
-      ImSdkEventType.ConnectSuccess,
-      () => {
-        console.log(' >> 已经成功连接到腾讯云服务器');
-      },
-    );
-    const NewMessage = ImSdk.addListener(ImSdkEventType.NewMessage, data => {
-      console.log(' >> NewMessage', data);
-    });
-    
-  }, []);
-  return (
-    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      <Text>GroupChat</Text>
-    </View>
-  );
-}
-
-function PrivateChat() {
-  return (
-    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-      <Text>PrivateChat</Text>
-    </View>
-  );
-}
+const subs = [
+  ImSdkEventType.Connecting,
+  ImSdkEventType.ConnectFailed,
+  ImSdkEventType.ConnectSuccess,
+  ImSdkEventType.KickedOffline,
+  ImSdkEventType.UserSigExpired,
+  ImSdkEventType.SelfInfoUpdated,
+  
+  ImSdkEventType.NewMessage,
+  ImSdkEventType.ConversationChanged,
+  ImSdkEventType.NewConversation,
+];
 
 function App() {
   useEffect(() => {
-    initImSdk();
+    ImSdk.initSDK(1400665794, V2TIMLogLevel.V2TIM_LOG_DEBUG);
+
+    const emitters: Record<string, EmitterSubscription> = {};
+
+    for (let sub of subs) {
+      emitters[sub] = ImSdk.addListener(sub, async () => {
+        console.log(' >> ', sub);
+        if (
+          sub === ImSdkEventType.ConnectSuccess ||
+          sub === ImSdkEventType.UserSigExpired
+        ) {
+          const res = await login_im_sdk();
+          if (res && res.id && res.sig) {
+            const [err1] = await to(ImSdk.login(`${res.id}`, res.sig));
+            if (err1) console.log(' >> ', sub, err1);
+            const [err2] = await to(ImSdk.joinGroup(res.group_id, 'Hello'));
+            if (err2) console.log(' >> ', sub, err2);
+          }
+        }
+      });
+    }
+
+    return () => {
+      for (let sub of subs) {
+        emitters[sub].remove();
+      }
+    };
   }, []);
+
   return (
     <NavigationContainer>
       <Tab.Navigator>
@@ -87,22 +75,3 @@ function App() {
 }
 
 export default App;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
