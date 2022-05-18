@@ -4,6 +4,7 @@
 
 @implementation TencentIm {
     V2TIMManager *_manager;
+    V2TIMMessage *_lastMsg;
 }
 
 RCT_EXPORT_MODULE()
@@ -14,9 +15,6 @@ RCT_EXPORT_METHOD(initSDK:(int)sdkAppID
                   rejecter:(RCTPromiseRejectBlock)reject) {
     V2TIMSDKConfig *config = [[V2TIMSDKConfig alloc] init];
     switch (logLevel) {
-        case 0:
-            config.logLevel = V2TIM_LOG_NONE;
-            break;
         case 3:
             config.logLevel = V2TIM_LOG_DEBUG;
             break;
@@ -30,7 +28,7 @@ RCT_EXPORT_METHOD(initSDK:(int)sdkAppID
             config.logLevel = V2TIM_LOG_ERROR;
             break;
         default:
-            config.logLevel = V2TIM_LOG_INFO;
+            config.logLevel = V2TIM_LOG_NONE;
             break;
     }
     if (!(self->_manager)) {
@@ -39,6 +37,7 @@ RCT_EXPORT_METHOD(initSDK:(int)sdkAppID
     [_manager initSDK:sdkAppID config:config listener:self];
     [_manager addAdvancedMsgListener:self];
     [_manager setConversationListener:self];
+    [_manager setGroupListener:self];
     resolve(nil);
 }
 
@@ -98,14 +97,104 @@ RCT_EXPORT_METHOD(setSelfInfo:(NSDictionary *)params
 
 RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                   size:(int)size
-                  lastMsg:(V2TIMMessage *)lastMsg
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
         return;
     }
-    [_manager getC2CHistoryMessageList:userID count:size lastMsg:lastMsg succ:^(NSArray<V2TIMMessage *> *msgs) {
-        resolve(msgs);
+    [_manager getC2CHistoryMessageList:userID count:size lastMsg:_lastMsg ? _lastMsg : nil succ:^(NSArray<V2TIMMessage *> *msgs) {
+        if ([msgs count]) {
+            self->_lastMsg = [msgs lastObject];
+        }
+        NSMutableArray *msgArr = [[NSMutableArray alloc] init];
+        for (V2TIMMessage *item in msgs) {
+            NSTimeInterval interval = [item.timestamp timeIntervalSince1970] * 1000;
+            NSInteger time = interval;
+            NSDictionary *customData =  [NSJSONSerialization JSONObjectWithData:item.customElem.data options:NSJSONReadingMutableLeaves error:nil];
+            NSArray<V2TIMImage *> *imageList = item.imageElem.imageList;
+            NSMutableArray *imageArr = [[NSMutableArray alloc] init];
+            for (V2TIMImage *timImage in imageList) {
+                // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
+                NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
+                            // 判断 imagePath 下有没有已经下载过的图片文件
+                if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
+                    // 下载图片
+                    [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
+                        // 下载进度
+                    } succ:^{
+                        // 下载成功
+                        [imageArr addObject:@{
+                            @"uuid": timImage.uuid ? timImage.uuid : @"",
+                            @"type": timImage.type ? @(timImage.type) : @(0),
+                            @"width": timImage.width ? @(timImage.width) : @(0),
+                            @"height": timImage.height ? @(timImage.height) : @(0),
+                            @"url": imagePath
+                        }];
+                    } fail:^(int code, NSString *msg) {
+                        // 下载失败
+                    }];
+                } else {
+                    // 图片已存在
+                    [imageArr addObject:@{
+                        @"uuid": timImage.uuid ? timImage.uuid : @"",
+                        @"type": timImage.type ? @(timImage.type) : @(0),
+                        @"width": timImage.width ? @(timImage.width) : @(0),
+                        @"height": timImage.height ? @(timImage.height) : @(0),
+                        @"url": imagePath
+                    }];
+                }
+            }
+            V2TIMSoundElem *soundElem = item.soundElem;
+            NSMutableArray *soundArr = [[NSMutableArray alloc] init];
+            NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
+                    // 判断 soundPath 下有没有已经下载过的语音文件
+            if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
+                // 下载语音
+                [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
+                    // 下载进度
+                } succ:^{
+                    // 下载成功
+                    [soundArr addObject:@{
+                        @"path": soundPath ? soundPath : @"",
+                        @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                        @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
+                        @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                    }];
+                } fail:^(int code, NSString *msg) {
+                    // 下载失败
+                }];
+            } else {
+                // 语音已存在
+                [soundArr addObject:@{
+                    @"path": soundPath ? soundPath : @"",
+                    @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                    @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
+                    @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                }];
+            }
+            [msgArr addObject:@{
+                @"msgID": item.msgID ? item.msgID : @"",
+                @"timestamp": @(time),
+                @"sender": item.sender ? item.sender : @"",
+                @"nickName": item.nickName ? item.nickName : @"",
+                @"friendRemark": item.friendRemark ? item.friendRemark : @"",
+                @"nameCard": item.nameCard ? item.nameCard : @"",
+                @"faceURL": item.faceURL ? item.faceURL : @"",
+                @"groupID": item.groupID ? item.groupID : @"",
+                @"userID": item.userID ? item.userID : @"",
+                @"status": @(item.status),
+                @"isSelf": @(item.isSelf),
+                @"isRead": @(item.isRead),
+                @"isPeerRead": @(item.isPeerRead),
+                @"groupAtUserList": item.groupAtUserList,
+                @"elemType": @(item.elemType),
+                @"textElem": item.textElem ? @{@"text": item.textElem.text} : @{},
+                @"customElem": item.customElem ? customData : @{},
+                @"imageElem": imageArr,
+                @"soundElem": soundArr
+            }];
+        }
+        resolve(msgArr);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.getC2CHistoryMessageList" code:code userInfo:@{
             @"message":desc
@@ -122,10 +211,109 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
         return;
     }
     [_manager getConversationList:page count:size succ:^(NSArray<V2TIMConversation *> *list, uint64_t nextSeq, BOOL isFinished) {
+        NSMutableArray *msgArr = [[NSMutableArray alloc] init];
+        for (V2TIMConversation *item in list) {
+            NSTimeInterval interval = [item.lastMessage.timestamp timeIntervalSince1970] * 1000;
+            NSInteger time = interval;
+            NSDictionary *customData = item.lastMessage.customElem.data ? [NSJSONSerialization JSONObjectWithData:item.lastMessage.customElem.data options:NSJSONReadingMutableLeaves error:nil] : @{};
+            NSArray<V2TIMImage *> *imageList = item.lastMessage.imageElem.imageList;
+            NSMutableArray *imageArr = [[NSMutableArray alloc] init];
+            for (V2TIMImage *timImage in imageList) {
+                // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
+                NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
+                            // 判断 imagePath 下有没有已经下载过的图片文件
+                if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
+                    // 下载图片
+                    [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
+                        // 下载进度
+                    } succ:^{
+                        // 下载成功
+                        [imageArr addObject:@{
+                            @"uuid": timImage.uuid ? timImage.uuid : @"",
+                            @"type": timImage.type ? @(timImage.type) : @(0),
+                            @"width": timImage.width ? @(timImage.width) : @(0),
+                            @"height": timImage.height ? @(timImage.height) : @(0),
+                            @"url": imagePath
+                        }];
+                    } fail:^(int code, NSString *msg) {
+                        // 下载失败
+                    }];
+                } else {
+                    // 图片已存在
+                    [imageArr addObject:@{
+                        @"uuid": timImage.uuid ? timImage.uuid : @"",
+                        @"type": timImage.type ? @(timImage.type) : @(0),
+                        @"width": timImage.width ? @(timImage.width) : @(0),
+                        @"height": timImage.height ? @(timImage.height) : @(0),
+                        @"url": imagePath
+                    }];
+                }
+            }
+            V2TIMSoundElem *soundElem = item.lastMessage.soundElem;
+            NSMutableArray *soundArr = [[NSMutableArray alloc] init];
+            NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
+                    // 判断 soundPath 下有没有已经下载过的语音文件
+            if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
+                // 下载语音
+                [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
+                    // 下载进度
+                } succ:^{
+                    // 下载成功
+                    [soundArr addObject:@{
+                        @"path": soundPath ? soundPath : @"",
+                        @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                        @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
+                        @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                    }];
+                } fail:^(int code, NSString *msg) {
+                    // 下载失败
+                }];
+            } else {
+                // 语音已存在
+                [soundArr addObject:@{
+                    @"path": soundPath ? soundPath : @"",
+                    @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                    @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
+                    @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                }];
+            }
+            [msgArr addObject:@{
+                @"type": @(item.type),
+                @"conversationID": item.conversationID ? item.conversationID : @"",
+                @"userID": item.userID ? item.userID : @"",
+                @"groupID": item.groupID ? item.groupID : @"",
+                @"groupType": item.groupType ? item.groupType : @"",
+                @"showName": item.showName ? item.showName : @"",
+                @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+                @"unreadCount": item.unreadCount ? @(item.unreadCount) : @(0),
+                @"recvOpt": item.recvOpt ? @(item.recvOpt) : @(0),
+                @"lastMessage": @{
+                    @"msgID": item.lastMessage.msgID ? item.lastMessage.msgID : @"",
+                    @"timestamp": @(time),
+                    @"sender": item.lastMessage.sender ? item.lastMessage.sender : @"",
+                    @"nickName": item.lastMessage.nickName ? item.lastMessage.nickName : @"",
+                    @"friendRemark": item.lastMessage.friendRemark ? item.lastMessage.friendRemark : @"",
+                    @"nameCard": item.lastMessage.nameCard ? item.lastMessage.nameCard : @"",
+                    @"faceURL": item.lastMessage.faceURL ? item.lastMessage.faceURL : @"",
+                    @"groupID": item.lastMessage.groupID ? item.lastMessage.groupID : @"",
+                    @"userID": item.lastMessage.userID ? item.lastMessage.userID : @"",
+                    @"status": item.lastMessage.status ? @(item.lastMessage.status) : @(0),
+                    @"isSelf": item.lastMessage.isSelf ? @(item.lastMessage.isSelf) : @(NO),
+                    @"isRead": item.lastMessage.isSelf ? @(item.lastMessage.isRead) : @(NO),
+                    @"isPeerRead": item.lastMessage.isPeerRead ? @(item.lastMessage.isPeerRead) : @(NO),
+                    @"groupAtUserList": item.lastMessage.groupAtUserList ? item.lastMessage.groupAtUserList: @[],
+                    @"elemType": item.lastMessage.elemType ? @(item.lastMessage.elemType) : @(0),
+                    @"textElem": item.lastMessage.textElem.text ? @{@"text": item.lastMessage.textElem.text} : @{},
+                    @"customElem": customData,
+                    @"imageElem": imageArr,
+                    @"soundElem": soundArr
+                }
+            }];
+        }
         resolve(@{
             @"page": @(nextSeq),
             @"is_finished": @(isFinished),
-            @"data": list
+            @"data": msgArr
         });
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.getConversationList" code:code userInfo:@{
@@ -285,16 +473,17 @@ RCT_EXPORT_METHOD(joinGroup:(NSString *)groupID
                   msg:(NSString *)msg
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    if (self->_manager) {
-        [_manager joinGroup:groupID msg:msg succ:^{
-            resolve(nil);
-        } fail:^(int code, NSString *desc) {
-            NSError *err = [NSError errorWithDomain:@"im.joinGroup" code:code userInfo:@{
-                @"message":desc
-            }];
-            reject([@(code) stringValue], desc, err);
-        }];
+    if (!(self->_manager)) {
+        return;
     }
+    [_manager joinGroup:groupID msg:msg succ:^{
+        resolve(nil);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.joinGroup" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
 }
 
 RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
@@ -345,20 +534,20 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 
 - (void)onRecvNewMessage:(V2TIMMessage *)msg {
     NSDictionary *info = @{
-        @"msg_id": msg.msgID,
-        @"nickname": msg.nickName,
-        @"face_url": msg.faceURL,
-        @"group_id": msg.groupID,
-        @"user_id": msg.userID,
-        @"sender": msg.sender,
-        @"at": msg.groupAtUserList
+        @"msg_id": msg.msgID ? msg.msgID : @"",
+        @"nickname": msg.nickName ? msg.nickName : @"",
+        @"face_url": msg.faceURL ? msg.faceURL : @"",
+        @"group_id": msg.groupID ? msg.groupID : @"",
+        @"user_id": msg.userID ? msg.userID : @"",
+        @"sender": msg.sender ? msg.sender : @"",
+        @"at": msg.groupAtUserList ? msg.groupAtUserList : @[]
     };
     // 文本消息
     if (msg.elemType == V2TIM_ELEM_TYPE_TEXT) {
         V2TIMTextElem *textElem = msg.textElem;
         [self sendEventWithName:@"NewMessage" body:@{
             @"info": info,
-            @"data": textElem.text,
+            @"data": textElem.text ? textElem.text : @"",
             @"type": @"text",
         }];
     }
@@ -378,7 +567,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         V2TIMImageElem *imageElem = msg.imageElem;
         // 一个图片消息会包含三种格式大小的图片，分别为原图、大图、微缩图
         NSArray<V2TIMImage *> *imageList = imageElem.imageList;
-        NSMutableArray * array =[[NSMutableArray alloc] initWithObjects:@"" ,nil];
+        NSMutableArray *imageArr = [[NSMutableArray alloc] init];
         for (V2TIMImage *timImage in imageList) {
             // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
             NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
@@ -389,18 +578,30 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                     // 下载进度
                 } succ:^{
                     // 下载成功
-                    [array addObject:imagePath];
+                    [imageArr addObject:@{
+                        @"uuid": timImage.uuid ? timImage.uuid : @"",
+                        @"type": timImage.type ? @(timImage.type) : @(0),
+                        @"width": timImage.width ? @(timImage.width) : @(0),
+                        @"height": timImage.height ? @(timImage.height) : @(0),
+                        @"url": imagePath
+                    }];
                 } fail:^(int code, NSString *msg) {
                     // 下载失败
                 }];
             } else {
                 // 图片已存在
-                [array addObject:imagePath];
+                [imageArr addObject:@{
+                    @"uuid": timImage.uuid ? timImage.uuid : @"",
+                    @"type": timImage.type ? @(timImage.type) : @(0),
+                    @"width": timImage.width ? @(timImage.width) : @(0),
+                    @"height": timImage.height ? @(timImage.height) : @(0),
+                    @"url": imagePath
+                }];
             }
         }
         [self sendEventWithName:@"NewMessage" body:@{
             @"info": info,
-            @"data": array,
+            @"data": imageArr,
             @"type": @"image",
         }];
     }
@@ -408,7 +609,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
     else if (msg.elemType == V2TIM_ELEM_TYPE_SOUND) {
         V2TIMSoundElem *soundElem = msg.soundElem;
         // 设置语音文件路径 soundPath，这里可以用 uuid 作为标识，避免重复下载
-        NSMutableArray * array =[[NSMutableArray alloc] initWithObjects:@"" ,nil];
+        NSMutableArray *soundArr = [[NSMutableArray alloc] init];
         NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
                 // 判断 soundPath 下有没有已经下载过的语音文件
         if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
@@ -417,29 +618,28 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                 // 下载进度
             } succ:^{
                 // 下载成功
-                [array addObject:soundPath];
+                [soundArr addObject:@{
+                    @"path": soundPath ? soundPath : @"",
+                    @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                    @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
+                    @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                }];
             } fail:^(int code, NSString *msg) {
                 // 下载失败
             }];
         } else {
             // 语音已存在
-            [array addObject:soundPath];
+            [soundArr addObject:@{
+                @"path": soundPath ? soundPath : @"",
+                @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
+                @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+            }];
         }
         [self sendEventWithName:@"NewMessage" body:@{
             @"info": info,
-            @"data": array,
+            @"data": soundArr,
             @"type": @"sound",
-        }];
-    }
-    // 群 tips 消息
-    else if (msg.elemType == V2TIM_ELEM_TYPE_GROUP_TIPS) {
-        V2TIMGroupTipsElem *tipsElem = msg.groupTipsElem;
-        // 当前群在线人数
-        uint32_t memberCount = tipsElem.memberCount;
-        [self sendEventWithName:@"NewMessage" body:@{
-            @"info": info,
-            @"data": @(memberCount),
-            @"type": @"memberCount",
         }];
     }
 }
@@ -454,6 +654,36 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
     [self sendEventWithName:@"ConversationChanged" body:nil];
 }
 
+/////////////////////////////////////////////////////////////////////////////////
+//        群成员相关通知
+/////////////////////////////////////////////////////////////////////////////////
+
+/// 有新成员加入群（该群所有的成员都能收到）
+- (void)onMemberEnter:(NSString *)groupID memberList:(NSArray<V2TIMGroupMemberInfo *>*)memberList {
+    NSMutableArray *dictArr = [[NSMutableArray alloc] init];
+    for(V2TIMGroupMemberInfo *item in memberList) {
+        [dictArr addObject:@{
+            @"userID": item.userID ? item.userID : @"",
+            @"nickName": item.nickName ? item.nickName : @"",
+            @"friendRemark": item.friendRemark ? item.friendRemark : @"",
+            @"nameCard": item.nameCard ? item.nameCard : @"",
+            @"faceURL": item.faceURL ? item.faceURL : @""
+        }];
+    }
+    [self sendEventWithName:@"MemberEnter" body:@{@"data": dictArr}];
+}
+
+/// 有成员离开群（该群所有的成员都能收到）
+- (void)onMemberLeave:(NSString *)groupID member:(V2TIMGroupMemberInfo *)member {
+    [self sendEventWithName:@"MemberLeave" body:@{@"data": @{
+        @"userID": member.userID ? member.userID : @"",
+        @"nickName": member.nickName ? member.nickName : @"",
+        @"friendRemark": member.friendRemark ? member.friendRemark : @"",
+        @"nameCard": member.nameCard ? member.nameCard : @"",
+        @"faceURL": member.faceURL ? member.faceURL : @""
+    }}];
+}
+
 - (NSArray<NSString *> *)supportedEvents {
   return @[
       @"Connecting",
@@ -464,7 +694,9 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
       @"SelfInfoUpdated",
       @"NewMessage",
       @"NewConversation",
-      @"ConversationChanged"
+      @"ConversationChanged",
+      @"MemberEnter",
+      @"MemberLeave"
   ];
 }
 

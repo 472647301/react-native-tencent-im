@@ -8,56 +8,64 @@
  * https://github.com/facebook/react-native
  */
 
-import React, {useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
+import {V2TIMLogLevel} from '@byron-react-native/tencent-im';
 import GroupChat from './src/pages/GroupChat';
 import PrivateChat from './src/pages/PrivateChat';
-import {EmitterSubscription} from 'react-native';
+import {EmitterSubscription, View, ActivityIndicator} from 'react-native';
 import {login_im_sdk, to} from './src/utils';
+import HomeScreen from './src/pages/HomeScreen';
+import {StatusBar} from 'react-native';
 
-const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
-const subs = [
+const subscriptions = [
   ImSdkEventType.Connecting,
   ImSdkEventType.ConnectFailed,
   ImSdkEventType.ConnectSuccess,
   ImSdkEventType.KickedOffline,
   ImSdkEventType.UserSigExpired,
   ImSdkEventType.SelfInfoUpdated,
-
-  ImSdkEventType.NewMessage,
-  ImSdkEventType.ConversationChanged,
-  ImSdkEventType.NewConversation,
 ];
 
 function App() {
+  const [groupID, setGroupID] = useState('');
+
   useEffect(() => {
-    ImSdk.initSDK(1400665794);
+    ImSdk.initSDK(1400665794, V2TIMLogLevel.V2TIM_LOG_NONE);
 
     const emitters: Record<string, EmitterSubscription> = {};
 
-    for (let sub of subs) {
+    for (let sub of subscriptions) {
       emitters[sub] = ImSdk.addListener(sub, async () => {
-        console.log(' >> ', sub);
+        console.log(' >> EmitterSubscription ', sub);
         if (
           sub === ImSdkEventType.ConnectSuccess ||
           sub === ImSdkEventType.UserSigExpired
         ) {
           const res = await login_im_sdk();
           if (res && res.id && res.sig) {
-            const [err1] = await to(ImSdk.login(`${res.id}`, res.sig));
-            if (err1) console.log(' >> ', sub, err1);
-            const [err2] = await to(ImSdk.joinGroup(res.group_id, 'Hello'));
-            if (err2) console.log(' >> ', sub, err2);
+            const [err] = await to(ImSdk.login(`${res.id}`, res.sig));
+            // await ImSdk.setSelfInfo(
+            //   '18816468657',
+            //   'https://avatars.githubusercontent.com/u/10445610?s=64&v=4',
+            // );
+            // ImSdk.sendC2CTextMessage('Hello', '23714805');
+            if (err) {
+              console.log(' >> ImSdk.login err', err);
+              return;
+            }
+            setGroupID(res.group_id);
           }
         }
       });
     }
 
     return () => {
-      for (let sub of subs) {
+      for (let sub of subscriptions) {
         emitters[sub].remove();
       }
     };
@@ -65,10 +73,30 @@ function App() {
 
   return (
     <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Group" component={GroupChat} />
-        <Tab.Screen name="Private" component={PrivateChat} />
-      </Tab.Navigator>
+      <StatusBar barStyle={'light-content'} />
+      {groupID ? (
+        <Stack.Navigator screenOptions={{headerShown: false}}>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            initialParams={{groupID}}
+          />
+          <Stack.Screen
+            name="Group"
+            component={GroupChat}
+            initialParams={{groupID}}
+          />
+          <Stack.Screen
+            name="Private"
+            component={PrivateChat}
+            initialParams={{groupID}}
+          />
+        </Stack.Navigator>
+      ) : (
+        <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+          <ActivityIndicator size={'large'} color={'#000'} />
+        </View>
+      )}
     </NavigationContainer>
   );
 }

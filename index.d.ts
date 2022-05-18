@@ -125,16 +125,16 @@ declare module "@byron-react-native/tencent-im" {
     textElem: { text: string };
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_CUSTOM，customElem 会存储自定义消息内容
-    customElem: { data: object; desc: string; extension: string };
+    customElem: any;
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_IMAGE，imageElem 会存储图片消息内容
-    imageElem: { path: string; imageList: Array<V2TIMImage> };
+    imageElem: ImSdkImageElem[];
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_SOUND，soundElem 会存储语音消息内容
-    soundElem: { path: string };
+    soundElem: ImSdkSoundElem[];
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_VIDEO，videoElem 会存储视频消息内容
-    videoElem: V2TIMSoundElem;
+    // videoElem: V2TIMSoundElem;
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_FILE，fileElem 会存储文件消息内容
     // @property(nonatomic,strong,readonly) V2TIMFileElem *fileElem;
@@ -247,6 +247,37 @@ declare module "@byron-react-native/tencent-im" {
      * 收到会话更新的回调
      */
     "ConversationChanged" = "ConversationChanged",
+    /**
+     * 有新成员加入群（该群所有的成员都能收到）
+     */
+    "MemberEnter" = "MemberEnter",
+    /**
+     * 有成员离开群（该群所有的成员都能收到）
+     */
+    "MemberLeave" = "MemberLeave",
+  }
+
+  export interface ImSdkMember {
+    faceURL: string;
+    friendRemark: string;
+    nameCard: string;
+    nickName: string;
+    userID: string;
+  }
+
+  export interface ImSdkSoundElem {
+    path: string;
+    uuid: string;
+    dataSize: number;
+    duration: number;
+  }
+
+  export interface ImSdkImageElem {
+    uuid: string;
+    type: number;
+    width: number;
+    height: number;
+    url: string;
   }
 
   export class ImSdk {
@@ -259,13 +290,16 @@ declare module "@byron-react-native/tencent-im" {
     static setSelfInfo: (nickName: string, faceURL: string) => Promise<void>;
     static getC2CHistoryMessageList: (
       userID: string,
-      size: number,
-      lastMsg?: V2TIMMessage
+      size: number
     ) => Promise<V2TIMMessage[]>;
     static getConversationList: (
       page: number,
       size: number
-    ) => Promise<V2TIMConversation[]>;
+    ) => Promise<{
+      page: number;
+      is_finished: boolean;
+      data: V2TIMConversation[];
+    }>;
     static sendC2CTextMessage: (text: string, userID: string) => Promise<void>;
     static sendC2CCustomMessage: (userID: string, params: any) => Promise<void>;
     static sendImageMessage: (

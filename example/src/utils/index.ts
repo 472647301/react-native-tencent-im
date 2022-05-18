@@ -16,14 +16,14 @@ api.interceptors.request.use(
     }
     const url = `${config.baseURL || ''}${config.url}`;
     console.log(
-      ` >> [${config.method} REQUEST] ${url}: ${JSON.stringify(
+      ` >> [${config.method?.toLocaleUpperCase()} REQUEST] ${url}: ${JSON.stringify(
         config.data || config.params,
       )}`,
     );
     return config;
   },
   error => {
-    console.log(' >> API REQUEST:', error);
+    console.log(' >> [API REQUEST ERROR]', error);
     return Promise.reject(error);
   },
 );
@@ -33,7 +33,7 @@ api.interceptors.response.use(
   response => {
     const {config} = response;
     console.log(
-      ` >> [${config.method} RESPONSE] ${config.url}:`,
+      ` >> [${config.method?.toLocaleUpperCase()} RESPONSE] ${config.url}:`,
       response.data ? response.data : response,
     );
     return response;
@@ -42,8 +42,10 @@ api.interceptors.response.use(
     const res = error.response || {};
     const {config = {}} = res;
     console.log(
-      ` >> [${config.method} RESPONSE] ${config.url}:`,
+      ` >> [API RESPONSE ERROR]`,
+      config.url,
       res.data ? res.data : res,
+      error,
     );
     return Promise.reject(error);
   },
@@ -74,12 +76,12 @@ export async function admin_system_login() {
     api.post<IApiRes<{token: string}>>(
       'http://112.74.92.242:8765/v1/api/admin/system/login',
       {
-        phone: Platform.OS === 'ios' ? '18816468654' : '18816468655',
+        phone: Platform.OS === 'ios' ? '18816468651' : '18816468655',
         smsCode: '1234',
       },
     ),
   );
-  if (!res || res.data.statusCode !== 200) {
+  if (!res || !res.data.data) {
     return;
   }
   token = res.data.data.token;
@@ -92,7 +94,7 @@ export async function admin_user_info() {
       'http://112.74.92.242:8765/v1/api/admin/user/info',
     ),
   );
-  if (!res || res.data.statusCode !== 200) {
+  if (!res || !res.data.data) {
     return;
   }
   return res.data.data;
@@ -104,7 +106,7 @@ export async function index_user_login_im() {
       'http://web.xiaoquexinapp.com/index/user/loginIm',
     ),
   );
-  if (!res || res.data.statusCode !== 200) {
+  if (!res || !res.data.data) {
     return;
   }
   return res.data.data;

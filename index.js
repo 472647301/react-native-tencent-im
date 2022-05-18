@@ -54,6 +54,8 @@ export const ImSdkEventType = {
   NewMessage: "NewMessage",
   NewConversation: "NewConversation",
   ConversationChanged: "ConversationChanged",
+  MemberEnter: "MemberEnter",
+  MemberLeave: "MemberLeave",
 };
 
 export class ImSdk {
@@ -67,10 +69,10 @@ export class ImSdk {
     return TencentIm.logout();
   }
   static async setSelfInfo(nickName, faceURL) {
-    return TencentIm.setSelfInfo(nickName, faceURL);
+    return TencentIm.setSelfInfo({ nickName, faceURL });
   }
-  static async getC2CHistoryMessageList(userID, size, lastMsg) {
-    return TencentIm.getC2CHistoryMessageList(userID, size, lastMsg);
+  static async getC2CHistoryMessageList(userID, size) {
+    return TencentIm.getC2CHistoryMessageList(userID, size);
   }
   static async getConversationList(page, size) {
     return TencentIm.getConversationList(page, size);
