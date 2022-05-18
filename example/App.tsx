@@ -11,8 +11,7 @@
 import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import {ImSdk} from '@byron-react-native/tencent-im';
-import {ImSdkEventType, V2TIMLogLevel} from '@byron-react-native/tencent-im';
+import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
 import GroupChat from './src/pages/GroupChat';
 import PrivateChat from './src/pages/PrivateChat';
 import {EmitterSubscription} from 'react-native';
@@ -27,7 +26,7 @@ const subs = [
   ImSdkEventType.KickedOffline,
   ImSdkEventType.UserSigExpired,
   ImSdkEventType.SelfInfoUpdated,
-  
+
   ImSdkEventType.NewMessage,
   ImSdkEventType.ConversationChanged,
   ImSdkEventType.NewConversation,
@@ -35,7 +34,7 @@ const subs = [
 
 function App() {
   useEffect(() => {
-    ImSdk.initSDK(1400665794, V2TIMLogLevel.V2TIM_LOG_DEBUG);
+    ImSdk.initSDK(1400665794);
 
     const emitters: Record<string, EmitterSubscription> = {};
 
