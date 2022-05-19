@@ -71,7 +71,7 @@ export class ImSdk {
   static async setSelfInfo(nickName, faceURL) {
     return TencentIm.setSelfInfo({ nickName, faceURL });
   }
-  static async getC2CHistoryMessageList(userID, size) {
+  static async getC2CHistoryMessageList(userID, size, isFirst = false) {
     return TencentIm.getC2CHistoryMessageList(userID, size);
   }
   static async getConversationList(page, size) {
