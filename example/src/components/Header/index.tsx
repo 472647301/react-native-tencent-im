@@ -1,7 +1,15 @@
 import React from 'react';
-import {Text, View, Image} from 'react-native';
-import {TouchableOpacity, StyleSheet} from 'react-native';
+import {Text, View, Image, Platform} from 'react-native';
+import {TouchableOpacity, StyleSheet, Dimensions} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+
+const {width, height} = Dimensions.get('screen');
+
+const isIphoneX = () => {
+  const scale = (height / width + '').substring(0, 4);
+  const iX = Number(scale) * 100 === 216;
+  return Platform.OS === 'ios' && iX;
+};
 
 interface HeaderProps {
   title: string;
@@ -34,10 +42,10 @@ export function Header(props: Partial<HeaderProps>) {
 
 const styles = StyleSheet.create({
   header: {
-    height: 88,
+    height: isIphoneX() ? 66 : 44,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 44,
+    paddingTop: isIphoneX() ? 22 : 0,
   },
   header_left: {
     width: 30,
