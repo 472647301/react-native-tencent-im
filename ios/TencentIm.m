@@ -97,10 +97,14 @@ RCT_EXPORT_METHOD(setSelfInfo:(NSDictionary *)params
 
 RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                   size:(int)size
+                  isFirst:(BOOL)isFirst
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
         return;
+    }
+    if (isFirst) {
+        _lastMsg = nil;
     }
     [_manager getC2CHistoryMessageList:userID count:size lastMsg:_lastMsg ? _lastMsg : nil succ:^(NSArray<V2TIMMessage *> *msgs) {
         if ([msgs count]) {
