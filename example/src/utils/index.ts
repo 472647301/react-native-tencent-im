@@ -76,7 +76,7 @@ export async function admin_system_login() {
     api.post<IApiRes<{token: string}>>(
       'http://112.74.92.242:8765/v1/api/admin/system/login',
       {
-        phone: Platform.OS === 'ios' ? '18816468651' : '18816468655',
+        phone: Platform.OS === 'ios' ? '18816468651' : '18816468654',
         smsCode: '1234',
       },
     ),
