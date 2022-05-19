@@ -102,6 +102,18 @@ function PrivateChat() {
   const onTalk = () => {};
 
   const onSend = async (val: string) => {
+    if (val === '123') {
+      const [err, res] = await to(
+        ImSdk.sendC2CCustomMessage(route.params.userID, {
+          abc: '123',
+        }),
+      );
+      if (err) console.log(' >> sendC2CTextMessage', err);
+      Keyboard.dismiss();
+      if (!res) return;
+      setList([res].concat(listRef.current));
+      return;
+    }
     const [err, res] = await to(
       ImSdk.sendC2CTextMessage(val, route.params.userID),
     );
