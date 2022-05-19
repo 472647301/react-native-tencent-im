@@ -15,3 +15,6 @@ import TencentIm from 'react-native-tencent-im';
 // TODO: What to do with the module?
 TencentIm;
 ```
+## Screenshot
+
+<img src="https://github.com/472647301/react-native-tencent-im/blob/main/example/pic.png?raw=true" width="1038">
