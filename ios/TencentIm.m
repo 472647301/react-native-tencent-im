@@ -567,41 +567,15 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 }
 
 - (void)onRecvNewMessage:(V2TIMMessage *)msg {
-    NSDictionary *info = @{
-        @"msg_id": msg.msgID ? msg.msgID : @"",
-        @"nickname": msg.nickName ? msg.nickName : @"",
-        @"face_url": msg.faceURL ? msg.faceURL : @"",
-        @"group_id": msg.groupID ? msg.groupID : @"",
-        @"user_id": msg.userID ? msg.userID : @"",
-        @"sender": msg.sender ? msg.sender : @"",
-        @"at": msg.groupAtUserList ? msg.groupAtUserList : @[]
-    };
-    // 文本消息
-    if (msg.elemType == V2TIM_ELEM_TYPE_TEXT) {
-        V2TIMTextElem *textElem = msg.textElem;
-        [self sendEventWithName:@"NewMessage" body:@{
-            @"info": info,
-            @"data": textElem.text ? textElem.text : @"",
-            @"type": @"text",
-        }];
+    NSTimeInterval interval = [msg.timestamp timeIntervalSince1970] * 1000;
+    NSInteger time = interval;
+    NSString *customData = @"";
+    if (msg.elemType == V2TIM_ELEM_TYPE_CUSTOM) {
+        customData = [[NSString alloc] initWithData:msg.customElem.data encoding:NSUTF8StringEncoding];
     }
-    // 自定义消息
-    else if (msg.elemType == V2TIM_ELEM_TYPE_CUSTOM) {
-        V2TIMCustomElem *customElem = msg.customElem;
-        NSData *customData = customElem.data;
-//        NSDictionary *dictionary =[NSJSONSerialization JSONObjectWithData:customData options:NSJSONReadingMutableLeaves error:nil];
-        [self sendEventWithName:@"NewMessage" body:@{
-            @"info": info,
-            @"data": [[NSString alloc] initWithData:customData encoding:NSUTF8StringEncoding],
-            @"type": @"custom",
-        }];
-    }
-    // 图片消息
-    else if (msg.elemType == V2TIM_ELEM_TYPE_IMAGE) {
-        V2TIMImageElem *imageElem = msg.imageElem;
-        // 一个图片消息会包含三种格式大小的图片，分别为原图、大图、微缩图
-        NSArray<V2TIMImage *> *imageList = imageElem.imageList;
-        NSMutableArray *imageArr = [[NSMutableArray alloc] init];
+    NSMutableArray *imageArr = [[NSMutableArray alloc] init];
+    if (msg.elemType == V2TIM_ELEM_TYPE_IMAGE) {
+        NSArray<V2TIMImage *> *imageList = msg.imageElem.imageList;
         for (V2TIMImage *timImage in imageList) {
             // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
             NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
@@ -633,17 +607,10 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                 }];
             }
         }
-        [self sendEventWithName:@"NewMessage" body:@{
-            @"info": info,
-            @"data": imageArr,
-            @"type": @"image",
-        }];
     }
-    // 语音消息
-    else if (msg.elemType == V2TIM_ELEM_TYPE_SOUND) {
+    NSMutableArray *soundArr = [[NSMutableArray alloc] init];
+    if (msg.elemType == V2TIM_ELEM_TYPE_SOUND) {
         V2TIMSoundElem *soundElem = msg.soundElem;
-        // 设置语音文件路径 soundPath，这里可以用 uuid 作为标识，避免重复下载
-        NSMutableArray *soundArr = [[NSMutableArray alloc] init];
         NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
                 // 判断 soundPath 下有没有已经下载过的语音文件
         if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
@@ -670,12 +637,28 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                 @"duration": @(soundElem.duration)
             }];
         }
-        [self sendEventWithName:@"NewMessage" body:@{
-            @"info": info,
-            @"data": soundArr,
-            @"type": @"sound",
-        }];
     }
+    [self sendEventWithName:@"NewMessage" body:@{
+        @"msgID": msg.msgID ? msg.msgID : @"",
+        @"timestamp": @(time),
+        @"sender": msg.sender ? msg.sender : @"",
+        @"nickName": msg.nickName ? msg.nickName : @"",
+        @"friendRemark": msg.friendRemark ? msg.friendRemark : @"",
+        @"nameCard": msg.nameCard ? msg.nameCard : @"",
+        @"faceURL": msg.faceURL ? msg.faceURL : @"",
+        @"groupID": msg.groupID ? msg.groupID : @"",
+        @"userID": msg.userID ? msg.userID : @"",
+        @"status": @(msg.status),
+        @"isSelf": @(msg.isSelf),
+        @"isRead": @(msg.isRead),
+        @"isPeerRead": @(msg.isPeerRead),
+        @"groupAtUserList": msg.groupAtUserList ? msg.groupAtUserList : @[],
+        @"elemType": @(msg.elemType),
+        @"textElem": msg.textElem ? @{@"text": msg.textElem.text} : @{},
+        @"customElem": msg.customElem ? customData : @{},
+        @"imageElem": imageArr,
+        @"soundElem": soundArr
+    }];
 }
 
 // 收到会话新增的回调
