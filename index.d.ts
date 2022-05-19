@@ -301,36 +301,36 @@ declare module "@byron-react-native/tencent-im" {
       is_finished: boolean;
       data: V2TIMConversation[];
     }>;
-    static sendC2CTextMessage: (text: string, userID: string) => Promise<void>;
+    static sendC2CTextMessage: (text: string, userID: string) => Promise<V2TIMMessage>;
     static markC2CMessageAsRead: (userID: string) => Promise<void>;
-    static sendC2CCustomMessage: (userID: string, params: any) => Promise<void>;
+    static sendC2CCustomMessage: (userID: string, params: any) => Promise<V2TIMMessage>;
     static sendImageMessage: (
       userID: string,
       imagePath: string
-    ) => Promise<void>;
+    ) => Promise<V2TIMMessage>;
     static sendSoundMessage: (
       userID: string,
       soundPath: string,
       duration: number
-    ) => Promise<void>;
+    ) => Promise<V2TIMMessage>;
     static sendGroupTextMessage: (
       text: string,
       groupID: string
-    ) => Promise<void>;
+    ) => Promise<V2TIMMessage>;
     static sendGroupAtTextMessage: (
       text: string,
       groupID: string,
       atUserID: string
-    ) => Promise<void>;
+    ) => Promise<V2TIMMessage>;
     static sendGroupImageMessage: (
       groupID: string,
       imagePath: string
-    ) => Promise<void>;
+    ) => Promise<V2TIMMessage>;
     static sendGroupSoundMessage: (
       groupID: string,
       soundPath: string,
       duration: number
-    ) => Promise<void>;
+    ) => Promise<V2TIMMessage>;
     static joinGroup: (groupID: string, msg: string) => Promise<void>;
     static quitGroup: (groupID: string) => Promise<void>;
     static addListener: (
