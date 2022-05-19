@@ -47,7 +47,7 @@ function HomeScreen() {
       ),
     );
     if (err) console.log(' >> fetchList err', err);
-    console.log(' >> fetchList', res?.data);
+    console.log(' >> fetchList', res);
     if (loading) setLoading(false);
     if (!res) return;
     setList(res.data);
