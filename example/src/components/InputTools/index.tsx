@@ -18,6 +18,7 @@ function InputTools(props: Partial<InputToolsProps>) {
       return;
     }
     props.onSend && props.onSend(value);
+    setVlaue('');
   };
 
   return (
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 5,
     paddingVertical: 5,
-    color: '#fff'
+    color: '#fff',
   },
   add: {
     width: 36,

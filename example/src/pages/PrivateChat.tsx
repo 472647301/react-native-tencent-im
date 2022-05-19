@@ -30,30 +30,40 @@ function PrivateChat() {
   const [list, setList] = useState<V2TIMMessage[]>([]);
   const route = useRoute<RouteProp<Routes, 'Private'>>();
   const navigation = useNavigation<NavigationProp<Routes>>();
-  const subscription = useRef<EmitterSubscription>();
+  const subNewMessage = useRef<EmitterSubscription>();
+  const subConversation = useRef<EmitterSubscription>();
 
   const onBlur = () => {
-    subscription.current?.remove();
+    subNewMessage.current?.remove();
+    subConversation.current?.remove();
     console.log(' >> PrivateChat onBlur', route.params);
   };
 
   const onFocus = () => {
     setLoading(true);
-    fetchList().then(() => {
+    fetchList(true).then(() => {
       ImSdk.markC2CMessageAsRead(route.params.userID);
     });
-    subscription.current = ImSdk.addListener(
+    subNewMessage.current = ImSdk.addListener(
       ImSdkEventType.NewMessage,
       data => {
-        console.log(' >> addListener', data);
+        console.log(' >> NewMessage', data);
       },
     );
+
+    subConversation.current = ImSdk.addListener(
+      ImSdkEventType.ConversationChanged,
+      data => {
+        console.log(' >> ConversationChanged', data);
+      },
+    );
+
     console.log(' >> PrivateChat onFocus', route.params);
   };
 
-  const fetchList = async () => {
+  const fetchList = async (isFirst = false) => {
     const [err, res] = await to(
-      ImSdk.getC2CHistoryMessageList(route.params.userID, 20),
+      ImSdk.getC2CHistoryMessageList(route.params.userID, 20, isFirst),
     );
     if (err) console.log(' >> fetchList err', err);
     console.log(' >> getC2CHistoryMessageList', res);
@@ -96,6 +106,7 @@ function PrivateChat() {
       ImSdk.sendC2CTextMessage(val, route.params.userID),
     );
     if (err) console.log(' >> sendC2CTextMessage', err);
+    Keyboard.dismiss();
   };
 
   return (
