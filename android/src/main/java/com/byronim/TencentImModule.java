@@ -716,42 +716,14 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private final V2TIMAdvancedMsgListener v2TIMAdvancedMsgListener = new V2TIMAdvancedMsgListener() {
         @Override
         public void onRecvNewMessage(V2TIMMessage msg) {
-            int elemType = msg.getElemType();
-            WritableMap map = Arguments.createMap();
-            map.putString("msg_id", msg.getMsgID());
-            map.putString("nickname", msg.getNickName());
-            map.putString("face_url", msg.getFaceUrl());
-            map.putString("group_id", msg.getGroupID());
-            map.putString("user_id", msg.getUserID());
-            map.putString("sender", msg.getSender());
-            WritableArray atArray = Arguments.createArray();
-            for (String atUser : msg.getGroupAtUserList()) {
-                atArray.pushString(atUser);
+            WritableArray groupAtUserList = Arguments.createArray();
+            for (String str : msg.getGroupAtUserList()) {
+                groupAtUserList.pushString(str);
             }
-            map.putArray("at", atArray);
-            // 文本消息
-            if (elemType == V2TIMMessage.V2TIM_ELEM_TYPE_TEXT) {
-                WritableMap body = Arguments.createMap();
-                body.putMap("info", map);
-                body.putString("data", msg.getTextElem().getText());
-                body.putString("type", "text");
-                eventEmitter.emit("NewMessage", body);
-            }
-            // 自定义消息
-            else if (elemType == V2TIMMessage.V2TIM_ELEM_TYPE_CUSTOM) {
-                V2TIMCustomElem v2TIMCustomElem = msg.getCustomElem();
-                WritableMap body = Arguments.createMap();
-                body.putMap("info", map);
-                body.putString("data", new String(v2TIMCustomElem.getData()));
-                body.putString("type", "custom");
-                eventEmitter.emit("NewMessage", body);
-            }
-            // 图片消息
-            else if (elemType == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
-                V2TIMImageElem v2TIMImageElem = msg.getImageElem();
-                List<V2TIMImageElem.V2TIMImage> imageList = v2TIMImageElem.getImageList();
-                WritableArray imageArray = Arguments.createArray();
-                for (V2TIMImageElem.V2TIMImage v2TIMImage : imageList) {
+
+            WritableArray imageElem = Arguments.createArray();
+            if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
+                for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
                     String uuid = v2TIMImage.getUUID(); // 图片 ID
                     WritableMap data = Arguments.createMap();
                     @SuppressLint("SdCardPath") String imagePath = "/sdcard/im/image/" + uuid;
@@ -773,7 +745,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                                 data.putInt("width", v2TIMImage.getWidth());
                                 data.putInt("height", v2TIMImage.getHeight());
                                 data.putString("url", imagePath);
-                                imageArray.pushMap(data);
+                                imageElem.pushMap(data);
                             }
                         });
                     } else {
@@ -782,19 +754,14 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         data.putInt("width", v2TIMImage.getWidth());
                         data.putInt("height", v2TIMImage.getHeight());
                         data.putString("url", imagePath);
-                        imageArray.pushMap(data);
+                        imageElem.pushMap(data);
                     }
                 }
-                WritableMap body = Arguments.createMap();
-                body.putMap("info", map);
-                body.putArray("data", imageArray);
-                body.putString("type", "image");
-                eventEmitter.emit("NewMessage", body);
             }
-            // 语音消息
-            else if (elemType == V2TIMMessage.V2TIM_ELEM_TYPE_SOUND) {
+
+            WritableArray soundElem = Arguments.createArray();
+            if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_SOUND) {
                 V2TIMSoundElem v2TIMSoundElem = msg.getSoundElem();
-                WritableArray soundArray = Arguments.createArray();
                 String uuid = v2TIMSoundElem.getUUID(); // 图片 ID
                 WritableMap data = Arguments.createMap();
                 @SuppressLint("SdCardPath") String soundPath = "/sdcard/im/sound/" + uuid;
@@ -815,7 +782,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                             data.putString("uuid", uuid);
                             data.putInt("dataSize", v2TIMSoundElem.getDataSize());
                             data.putInt("duration", v2TIMSoundElem.getDuration());
-                            soundArray.pushMap(data);
+                            soundElem.pushMap(data);
                         }
                     });
                 } else {
@@ -823,14 +790,37 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     data.putString("uuid", uuid);
                     data.putInt("dataSize", v2TIMSoundElem.getDataSize());
                     data.putInt("duration", v2TIMSoundElem.getDuration());
-                    soundArray.pushMap(data);
+                    soundElem.pushMap(data);
                 }
-                WritableMap body = Arguments.createMap();
-                body.putMap("info", map);
-                body.putArray("data", soundArray);
-                body.putString("type", "sound");
-                eventEmitter.emit("NewMessage", body);
             }
+
+            WritableMap map = Arguments.createMap();
+            WritableMap textElem = Arguments.createMap();
+            textElem.putString("text", msg.getTextElem().getText());
+            map.putString("msgID", msg.getMsgID());
+            map.putInt("timestamp", (int)msg.getTimestamp());
+            map.putString("sender", msg.getSender());
+            map.putString("nickName", msg.getNickName());
+            map.putString("friendRemark", msg.getFriendRemark());
+            map.putString("nameCard", msg.getNameCard());
+            map.putString("faceURL", msg.getFaceUrl());
+            map.putString("groupID", msg.getGroupID());
+            map.putString("userID", msg.getUserID());
+            map.putInt("status", msg.getStatus());
+            map.putBoolean("isSelf", msg.isSelf());
+            map.putBoolean("isRead", msg.isRead());
+            map.putBoolean("isPeerRead", msg.isPeerRead());
+            map.putArray("groupAtUserList", groupAtUserList);
+            map.putInt("elemType", msg.getElemType());
+            map.putMap("textElem", textElem);
+            if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_CUSTOM) {
+                map.putString("customElem", new String(msg.getCustomElem().getData()));
+            } else {
+                map.putString("customElem", "{}");
+            }
+            map.putArray("imageElem", imageElem);
+            map.putArray("soundElem", soundElem);
+            eventEmitter.emit("NewMessage", map);
         }
     };
 }
