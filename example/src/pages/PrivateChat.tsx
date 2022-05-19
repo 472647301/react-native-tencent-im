@@ -2,24 +2,51 @@ import React, {useRef, useState, useEffect} from 'react';
 import {View, Text, Image, ActivityIndicator} from 'react-native';
 import {ImageBackground, StyleSheet} from 'react-native';
 import {TouchableWithoutFeedback, Keyboard} from 'react-native';
-import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
+import {ImSdk, V2TIMMessage} from '@byron-react-native/tencent-im';
+import {ImSdkEventType} from '@byron-react-native/tencent-im';
 import {RouteProp, useRoute} from '@react-navigation/native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 import RefreshFlatList from '../components/RefreshFlat';
 import InputTools from '../components/InputTools';
+import {Header} from '../components/Header';
+import {to} from '../utils';
+
+type Params = {
+  groupID: string;
+  userID: string;
+  nickName: string;
+};
+type Routes = {
+  Home: Params;
+  Group: Params;
+  Private: Params;
+};
 
 function PrivateChat() {
   const [loading, setLoading] = useState(false);
-  const [list, setList] = useState<string[]>([]);
-  const navigation = useNavigation();
-  const route = useRoute();
+  const [list, setList] = useState<V2TIMMessage[]>([]);
+  const route = useRoute<RouteProp<Routes, 'Private'>>();
+  const navigation = useNavigation<NavigationProp<Routes>>();
 
   const onBlur = () => {
     console.log(' >> PrivateChat onBlur', route.params);
   };
 
   const onFocus = () => {
+    setLoading(true);
+    fetchList();
     console.log(' >> PrivateChat onFocus', route.params);
+  };
+
+  const fetchList = async () => {
+    const [err, res] = await to(
+      ImSdk.getC2CHistoryMessageList(route.params.userID, 20),
+    );
+    if (err) console.log(' >> fetchList err', err);
+    console.log(' >> getC2CHistoryMessageList', res);
+    if (loading) setLoading(false);
+    if (!res) return;
+    setList(res);
   };
 
   useEffect(() => {
@@ -35,18 +62,15 @@ function PrivateChat() {
     return null;
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size={'large'} color={'#000'} />
-      </View>
-    );
-  }
-
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <ImageBackground style={{flex: 1}} source={require('./images/bg1.png')}>
-        {!list.length ? (
+        <Header title={route.params.nickName} />
+        {loading ? (
+          <View style={styles.loading}>
+            <ActivityIndicator size={'large'} color={'#000'} />
+          </View>
+        ) : !list.length ? (
           <View style={styles.loading}>
             <Text style={{color: '#fff'}}>暂无数据</Text>
           </View>

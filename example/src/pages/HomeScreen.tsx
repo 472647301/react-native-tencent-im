@@ -3,14 +3,12 @@ import {View, Image, Text, StyleSheet, Dimensions} from 'react-native';
 import {TouchableOpacity, ActivityIndicator} from 'react-native';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {RouteProp, useRoute} from '@react-navigation/native';
-import RefreshFlatList from '../components/RefreshFlat';
-import {
-  ImSdk,
-  V2TIMConversation,
-  V2TIMElemType,
-} from '@byron-react-native/tencent-im';
+import RefreshFlatList, {FooterStatus} from '../components/RefreshFlat';
+import {ImSdk, V2TIMElemType} from '@byron-react-native/tencent-im';
+import {V2TIMConversation} from '@byron-react-native/tencent-im';
 import {ImageBackground} from 'react-native';
 import {to} from '../utils';
+import dayjs from 'dayjs';
 
 const {width} = Dimensions.get('window');
 
@@ -21,6 +19,7 @@ const {width} = Dimensions.get('window');
 type Params = {
   groupID: string;
   userID: string;
+  nickName: string;
 };
 type Routes = {
   Home: Params;
@@ -31,6 +30,7 @@ type Routes = {
 function HomeScreen() {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isFinished, setIsFinished] = useState(false);
   const [list, setList] = useState<V2TIMConversation[]>([]);
   const route = useRoute<RouteProp<Routes, 'Home'>>();
   const navigation = useNavigation<NavigationProp<Routes>>();
@@ -43,25 +43,32 @@ function HomeScreen() {
     const [err, res] = await to(
       ImSdk.getConversationList(
         typeof initPage === 'number' ? initPage : page,
-        2,
+        10,
       ),
     );
     if (err) console.log(' >> fetchList err', err);
     // console.log(' >> fetchList', res?.data);
-    if (res) setList(res.data);
     if (loading) setLoading(false);
+    if (!res) return;
+    setList(res.data);
+    setPage(res.page);
+    setIsFinished(res.is_finished);
   };
 
   const toGroupChat = () => {
     navigation.navigate('Group', route.params);
   };
 
-  const toPrivateChat = () => {
-    navigation.navigate('Private', route.params);
+  const onHeader = async () => {
+    await fetchList(0);
   };
 
-  const onRefresh = async () => {
-    await fetchList(0);
+  const onFooter = async () => {
+    if (isFinished) {
+      return;
+    }
+    await fetchList();
+    return FooterStatus.CanLoadMore;
   };
 
   const renderItem = ({item}: {item: V2TIMConversation}) => {
@@ -96,7 +103,8 @@ function HomeScreen() {
         data={list}
         style={{flex: 1}}
         renderItem={renderItem}
-        onHeader={onRefresh}
+        onHeader={onHeader}
+        onFooter={onFooter}
       />
     </ImageBackground>
   );
@@ -104,21 +112,57 @@ function HomeScreen() {
 
 const ChatInfo = (props: V2TIMConversation) => {
   const msg = props.lastMessage || {};
+  const route = useRoute<RouteProp<Routes, 'Home'>>();
+  const navigation = useNavigation<NavigationProp<Routes>>();
+
+  const toPrivateChat = () => {
+    navigation.navigate('Private', {
+      ...route.params,
+      userID: msg.userID,
+      nickName: msg.nickName,
+    });
+  };
+
+  const getText = () => {
+    let text = '';
+    switch (msg.elemType) {
+      case V2TIMElemType.V2TIM_ELEM_TYPE_TEXT:
+        text = msg.textElem.text;
+        break;
+      case V2TIMElemType.V2TIM_ELEM_TYPE_IMAGE:
+        text = '[图片]';
+        break;
+      case V2TIMElemType.V2TIM_ELEM_TYPE_SOUND:
+        text = '[语音]';
+        break;
+      case V2TIMElemType.V2TIM_ELEM_TYPE_CUSTOM:
+        text = '[自定义消息]';
+        break;
+    }
+    return text;
+  };
+
   return (
     <ImageBackground
       style={styles.info}
       source={require('./images/info_bg.png')}>
-      <TouchableOpacity style={styles.info_wrap}>
+      <TouchableOpacity style={styles.info_wrap} onPress={toPrivateChat}>
         <Image style={styles.info_left} source={{uri: msg.faceURL}} />
         <View style={styles.info_center}>
           <Text style={styles.info_center_name}>{msg.nickName}</Text>
-          <Text style={styles.info_center_desc}>{msg.textElem.text}</Text>
+          <Text style={styles.info_center_desc}>{getText()}</Text>
         </View>
         <View style={styles.info_right}>
-          <Text style={styles.info_right_text}>刚刚</Text>
-          <View style={styles.info_right_notice}>
-            <Text style={styles.info_right_notice_text}>2</Text>
-          </View>
+          <Text style={styles.info_right_text}>
+            {dayjs(msg.timestamp).format('HH:mm')}
+          </Text>
+          {props.unreadCount ? (
+            <View style={styles.info_right_notice}>
+              <Text style={styles.info_right_notice_text}>
+                {props.unreadCount}
+              </Text>
+            </View>
+          ) : null}
         </View>
       </TouchableOpacity>
     </ImageBackground>
@@ -171,7 +215,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   info_right: {
-    width: 44,
+    width: 66,
     alignItems: 'flex-end',
   },
   info_right_text: {

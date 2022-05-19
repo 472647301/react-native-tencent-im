@@ -7,7 +7,7 @@ import {forwardRef, useImperativeHandle} from 'react';
 
 export interface RefreshFlatListProps<ItemT> extends FlatListProps<ItemT> {
   onHeader?: () => Promise<void>;
-  onFooter?: () => Promise<number>;
+  onFooter?: () => Promise<FooterStatus | void>;
 }
 
 export enum FooterStatus {
@@ -59,13 +59,8 @@ function RefreshFlatList<ItemT>(props: RefreshFlatListProps<ItemT>) {
     const result = await props.onFooter();
     footerTracker.current[length] = true;
     footerInProgress.current = false;
-    if (result === -1) {
-      footerRef.current?.changeStatus(FooterStatus.Failure);
-      return;
-    } else if (result === 1) {
-      footerRef.current?.changeStatus(FooterStatus.CanLoadMore);
-    } else {
-      footerRef.current?.changeStatus(FooterStatus.NoMoreData);
+    if (typeof result === 'number') {
+      footerRef.current?.changeStatus(result);
     }
   };
 
@@ -81,7 +76,10 @@ function RefreshFlatList<ItemT>(props: RefreshFlatListProps<ItemT>) {
   };
 
   const refreshControl = props.onHeader ? (
-    <RefreshControl onRefresh={onHeader} />
+    <RefreshControl
+      onRefresh={onHeader}
+      style={{backgroundColor: 'transparent', justifyContent: 'flex-end'}}
+    />
   ) : (
     void 0
   );
