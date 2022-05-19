@@ -6,7 +6,7 @@ import {RouteProp, useRoute} from '@react-navigation/native';
 import RefreshFlatList, {FooterStatus} from '../components/RefreshFlat';
 import {ImSdk, V2TIMElemType} from '@byron-react-native/tencent-im';
 import {V2TIMConversation} from '@byron-react-native/tencent-im';
-import {ImageBackground} from 'react-native';
+import {ImageBackground, SafeAreaView} from 'react-native';
 import {to} from '../utils';
 import dayjs from 'dayjs';
 
@@ -53,6 +53,7 @@ function HomeScreen() {
     setList(res.data);
     setPage(res.page);
     setIsFinished(res.is_finished);
+    return res;
   };
 
   const toGroupChat = () => {
@@ -67,8 +68,11 @@ function HomeScreen() {
     if (isFinished) {
       return;
     }
-    await fetchList();
-    return FooterStatus.CanLoadMore;
+    const res = await fetchList();
+    if (res && res.is_finished) {
+      return FooterStatus.NoMoreData;
+    }
+    return FooterStatus.Idle;
   };
 
   const renderItem = ({item}: {item: V2TIMConversation}) => {
@@ -78,34 +82,36 @@ function HomeScreen() {
   if (loading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size={'large'} color={'#000'} />
+        <ActivityIndicator size={'large'} color={'#fff'} />
       </View>
     );
   }
 
   return (
     <ImageBackground style={{flex: 1}} source={require('./images/bg0.png')}>
-      <ImageBackground
-        style={[styles.info, {marginTop: 40}]}
-        source={require('./images/info_bg.png')}>
-        <TouchableOpacity style={styles.info_wrap} onPress={toGroupChat}>
-          <Image
-            style={styles.github}
-            source={require('./images/github.png')}
-          />
-          <View style={styles.info_center}>
-            <Text style={styles.info_center_name}>Group Chat</Text>
-            <Text style={styles.info_center_desc}>© 2022 GitHub, Inc.</Text>
-          </View>
-        </TouchableOpacity>
-      </ImageBackground>
-      <RefreshFlatList
-        data={list}
-        style={{flex: 1}}
-        renderItem={renderItem}
-        onHeader={onHeader}
-        onFooter={onFooter}
-      />
+      <SafeAreaView style={{flex: 1}}>
+        <ImageBackground
+          style={[styles.info, {marginTop: 40}]}
+          source={require('./images/info_bg.png')}>
+          <TouchableOpacity style={styles.info_wrap} onPress={toGroupChat}>
+            <Image
+              style={styles.github}
+              source={require('./images/github.png')}
+            />
+            <View style={styles.info_center}>
+              <Text style={styles.info_center_name}>Group Chat</Text>
+              <Text style={styles.info_center_desc}>© 2022 GitHub, Inc.</Text>
+            </View>
+          </TouchableOpacity>
+        </ImageBackground>
+        <RefreshFlatList
+          data={list}
+          style={{flex: 1}}
+          renderItem={renderItem}
+          onHeader={onHeader}
+          onFooter={onFooter}
+        />
+      </SafeAreaView>
     </ImageBackground>
   );
 }
@@ -119,7 +125,7 @@ const ChatInfo = (props: V2TIMConversation) => {
     navigation.navigate('Private', {
       ...route.params,
       userID: props.userID,
-      nickName: props.showName,
+      nickName: `${props.showName} - ${props.userID}`,
     });
   };
 

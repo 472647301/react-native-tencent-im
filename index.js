@@ -81,7 +81,7 @@ export class ImSdk {
     return TencentIm.sendC2CTextMessage(text, userID);
   }
   static async markC2CMessageAsRead(userID) {
-    return TencentIm.sendC2CTextMessage(userID);
+    return TencentIm.markC2CMessageAsRead(userID);
   }
   static async sendC2CCustomMessage(userID, params) {
     return TencentIm.sendC2CCustomMessage(userID, params);

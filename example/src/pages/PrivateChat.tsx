@@ -1,7 +1,8 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {View, Text, Image, ActivityIndicator} from 'react-native';
-import {ImageBackground, StyleSheet} from 'react-native';
+import {View, Text, ActivityIndicator} from 'react-native';
+import {ImageBackground, StyleSheet, EmitterSubscription} from 'react-native';
 import {TouchableWithoutFeedback, Keyboard} from 'react-native';
+import {KeyboardAvoidingView} from 'react-native';
 import {ImSdk, V2TIMMessage} from '@byron-react-native/tencent-im';
 import {ImSdkEventType} from '@byron-react-native/tencent-im';
 import {RouteProp, useRoute} from '@react-navigation/native';
@@ -10,6 +11,8 @@ import RefreshFlatList from '../components/RefreshFlat';
 import InputTools from '../components/InputTools';
 import {Header} from '../components/Header';
 import {to} from '../utils';
+import {PrivateMessage} from '../components/Message';
+import {launchImageLibrary} from 'react-native-image-picker';
 
 type Params = {
   groupID: string;
@@ -27,14 +30,24 @@ function PrivateChat() {
   const [list, setList] = useState<V2TIMMessage[]>([]);
   const route = useRoute<RouteProp<Routes, 'Private'>>();
   const navigation = useNavigation<NavigationProp<Routes>>();
+  const subscription = useRef<EmitterSubscription>();
 
   const onBlur = () => {
+    subscription.current?.remove();
     console.log(' >> PrivateChat onBlur', route.params);
   };
 
   const onFocus = () => {
     setLoading(true);
-    fetchList();
+    fetchList().then(() => {
+      ImSdk.markC2CMessageAsRead(route.params.userID);
+    });
+    subscription.current = ImSdk.addListener(
+      ImSdkEventType.NewMessage,
+      data => {
+        console.log(' >> addListener', data);
+      },
+    );
     console.log(' >> PrivateChat onFocus', route.params);
   };
 
@@ -44,7 +57,7 @@ function PrivateChat() {
     );
     if (err) console.log(' >> fetchList err', err);
     console.log(' >> getC2CHistoryMessageList', res);
-    if (loading) setLoading(false);
+    setLoading(false);
     if (!res) return;
     setList(res);
   };
@@ -58,34 +71,61 @@ function PrivateChat() {
     };
   }, [navigation]);
 
-  const renderItem = () => {
-    return null;
+  const renderItem = ({item}: {item: V2TIMMessage}) => {
+    return <PrivateMessage {...item} key={item.msgID} />;
+  };
+
+  const onPic = async () => {
+    const res = await launchImageLibrary({mediaType: 'photo'});
+    if (!res.assets) return;
+    for (let image of res.assets) {
+      if (!image.uri) {
+        continue;
+      }
+      const [err] = await to(
+        ImSdk.sendImageMessage(route.params.userID, image.uri),
+      );
+      if (err) console.log(' >> sendImageMessage', err);
+    }
+  };
+
+  const onTalk = () => {};
+
+  const onSend = async (val: string) => {
+    const [err, _res] = await to(
+      ImSdk.sendC2CTextMessage(val, route.params.userID),
+    );
+    if (err) console.log(' >> sendC2CTextMessage', err);
   };
 
   return (
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+    <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
       <ImageBackground style={{flex: 1}} source={require('./images/bg1.png')}>
-        <Header title={route.params.nickName} />
-        {loading ? (
-          <View style={styles.loading}>
-            <ActivityIndicator size={'large'} color={'#000'} />
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          <View style={{flex: 1}}>
+            <Header title={route.params.nickName} />
+            {loading ? (
+              <View style={styles.loading}>
+                <ActivityIndicator size={'large'} color={'#fff'} />
+              </View>
+            ) : !list.length ? (
+              <View style={styles.loading}>
+                <Text style={{color: '#fff'}}>暂无数据</Text>
+              </View>
+            ) : (
+              <RefreshFlatList
+                data={list}
+                style={{flex: 1}}
+                inverted={true}
+                refreshing={false}
+                renderItem={renderItem}
+              />
+            )}
+            <InputTools onPic={onPic} onTalk={onTalk} onSend={onSend} />
           </View>
-        ) : !list.length ? (
-          <View style={styles.loading}>
-            <Text style={{color: '#fff'}}>暂无数据</Text>
-          </View>
-        ) : (
-          <RefreshFlatList
-            data={list}
-            style={{flex: 1}}
-            inverted={true}
-            refreshing={false}
-            renderItem={renderItem}
-          />
-        )}
-        <InputTools />
+        </TouchableWithoutFeedback>
       </ImageBackground>
-    </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 

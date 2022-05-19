@@ -61,6 +61,8 @@ function RefreshFlatList<ItemT>(props: RefreshFlatListProps<ItemT>) {
     footerInProgress.current = false;
     if (typeof result === 'number') {
       footerRef.current?.changeStatus(result);
+    } else {
+      footerRef.current?.changeStatus(FooterStatus.Idle);
     }
   };
 
@@ -76,10 +78,7 @@ function RefreshFlatList<ItemT>(props: RefreshFlatListProps<ItemT>) {
   };
 
   const refreshControl = props.onHeader ? (
-    <RefreshControl
-      onRefresh={onHeader}
-      style={{backgroundColor: '#fff', justifyContent: 'flex-end'}}
-    />
+    <RefreshControl onRefresh={onHeader} />
   ) : (
     void 0
   );

@@ -1,20 +1,35 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Image, ImageBackground, TouchableOpacity} from 'react-native';
 import {StyleSheet, Dimensions, TextInput, Text} from 'react-native';
 
 const {width} = Dimensions.get('window');
 
-function InputTools() {
+interface InputToolsProps {
+  onTalk: () => void;
+  onPic: () => void;
+  onSend: (value: string) => void;
+}
+
+function InputTools(props: Partial<InputToolsProps>) {
+  const [value, setVlaue] = useState('');
+
+  const onSend = () => {
+    if (!value) {
+      return;
+    }
+    props.onSend && props.onSend(value);
+  };
+
   return (
     <ImageBackground style={styles.tools} source={require('./images/bg.png')}>
-      <TouchableOpacity style={styles.talk}>
+      <TouchableOpacity style={styles.talk} onPress={props.onTalk}>
         <Image style={styles.talk} source={require('./images/talk.png')} />
       </TouchableOpacity>
-      <TextInput style={styles.input} />
-      <TouchableOpacity style={styles.add}>
+      <TextInput style={styles.input} onChangeText={setVlaue} value={value} />
+      <TouchableOpacity style={styles.add} onPress={props.onPic}>
         <Image style={styles.add} source={require('./images/add.png')} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.btn}>
+      <TouchableOpacity style={styles.btn} onPress={onSend}>
         <Text style={styles.btn_text}>Send</Text>
       </TouchableOpacity>
     </ImageBackground>
