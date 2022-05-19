@@ -153,9 +153,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getC2CHistoryMessageList(String userID, int size, Promise promise) {
+    public void getC2CHistoryMessageList(String userID, int size, Boolean isFirst, Promise promise) {
         if (manager == null) {
             return;
+        }
+        if (isFirst) {
+            lastMsg = null;
         }
         messageManager.getC2CHistoryMessageList(userID, size, lastMsg, new V2TIMValueCallback<List<V2TIMMessage>>() {
             @Override
