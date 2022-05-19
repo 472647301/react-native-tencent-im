@@ -31,7 +31,29 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
   };
 
   const ImageElem = () => {
-    return <></>;
+    if (props.imageElem.length) {
+      const elem = props.imageElem[1];
+      if (!elem) {
+        return (
+          <Text style={[styles.msg_text, {color: 'red'}]}>
+            {'缩略图解析失败'}
+          </Text>
+        );
+      }
+      return (
+        <View style={styles.image}>
+          <Image
+            source={{uri: `file://${elem.url}`}}
+            style={{width: elem.width, height: elem.height}}
+            onError={err => console.log(' >> Image', err.nativeEvent.error)}
+          />
+        </View>
+      );
+    } else {
+      return (
+        <Text style={[styles.msg_text, {color: 'red'}]}>{'图片资源为空'}</Text>
+      );
+    }
   };
 
   const SoundElem = () => {
@@ -149,5 +171,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 100,
+  },
+  image: {
+    marginHorizontal: 10,
+    marginVertical: 6,
   },
 });

@@ -18,7 +18,7 @@ import PrivateChat from './src/pages/PrivateChat';
 import {EmitterSubscription, View, ActivityIndicator} from 'react-native';
 import {login_im_sdk, to} from './src/utils';
 import HomeScreen from './src/pages/HomeScreen';
-import {StatusBar} from 'react-native';
+import {StatusBar, Platform, PermissionsAndroid} from 'react-native';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,10 +31,22 @@ const subscriptions = [
   ImSdkEventType.SelfInfoUpdated,
 ];
 
+async function hasPhotoPermission() {
+  if (Platform.OS === 'ios') {
+    return;
+  }
+  const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
+  const hasPermission = await PermissionsAndroid.check(permission);
+  if (!hasPermission) {
+    await PermissionsAndroid.request(permission);
+  }
+}
+
 function App() {
   const [groupID, setGroupID] = useState('');
 
   useEffect(() => {
+    hasPhotoPermission();
     const initImSDK = async () => {
       const res = await login_im_sdk();
       if (res && res.id && res.sig) {

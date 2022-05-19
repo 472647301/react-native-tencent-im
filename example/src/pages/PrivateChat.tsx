@@ -92,10 +92,14 @@ function PrivateChat() {
       if (!image.uri) {
         continue;
       }
-      const [err] = await to(
-        ImSdk.sendImageMessage(route.params.userID, image.uri),
+      console.log(' >> image.uri', image.uri);
+      console.log(' >> image.uri.split', image.uri.split('file://')[1]);
+      const [err, res] = await to(
+        ImSdk.sendImageMessage(route.params.userID, image.uri.split('file://')[1]),
       );
       if (err) console.log(' >> sendImageMessage', err);
+      if (!res) return;
+      setList([res].concat(listRef.current));
     }
   };
 
