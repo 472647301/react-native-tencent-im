@@ -290,7 +290,8 @@ declare module "@byron-react-native/tencent-im" {
     static setSelfInfo: (nickName: string, faceURL: string) => Promise<void>;
     static getC2CHistoryMessageList: (
       userID: string,
-      size: number
+      size: number,
+      isFirst?: boolean
     ) => Promise<V2TIMMessage[]>;
     static getConversationList: (
       page: number,
