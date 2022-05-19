@@ -35,31 +35,34 @@ function App() {
   const [groupID, setGroupID] = useState('');
 
   useEffect(() => {
-    ImSdk.initSDK(1400665794, V2TIMLogLevel.V2TIM_LOG_NONE);
+    const initImSDK = async () => {
+      const res = await login_im_sdk();
+      if (res && res.id && res.sig) {
+        const [err] = await to(ImSdk.login(`${res.id}`, res.sig));
+        // await ImSdk.setSelfInfo(
+        //   '18816468657',
+        //   'https://avatars.githubusercontent.com/u/10445610?s=64&v=4',
+        // );
+        // ImSdk.sendC2CTextMessage('Hello', '23714805');
+        if (err) {
+          console.log(' >> ImSdk.login err', err);
+          return;
+        }
+        setGroupID(res.group_id);
+      }
+    };
+
+    ImSdk.initSDK(1400665794, V2TIMLogLevel.V2TIM_LOG_NONE).then(() => {
+      initImSDK();
+    });
 
     const emitters: Record<string, EmitterSubscription> = {};
 
     for (let sub of subscriptions) {
       emitters[sub] = ImSdk.addListener(sub, async () => {
         console.log(' >> EmitterSubscription ', sub);
-        if (
-          sub === ImSdkEventType.ConnectSuccess ||
-          sub === ImSdkEventType.UserSigExpired
-        ) {
-          const res = await login_im_sdk();
-          if (res && res.id && res.sig) {
-            const [err] = await to(ImSdk.login(`${res.id}`, res.sig));
-            // await ImSdk.setSelfInfo(
-            //   '18816468657',
-            //   'https://avatars.githubusercontent.com/u/10445610?s=64&v=4',
-            // );
-            // ImSdk.sendC2CTextMessage('Hello', '23714805');
-            if (err) {
-              console.log(' >> ImSdk.login err', err);
-              return;
-            }
-            setGroupID(res.group_id);
-          }
+        if (sub === ImSdkEventType.UserSigExpired) {
+          initImSDK();
         }
       });
     }

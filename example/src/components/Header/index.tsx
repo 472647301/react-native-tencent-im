@@ -42,10 +42,10 @@ export function Header(props: Partial<HeaderProps>) {
 
 const styles = StyleSheet.create({
   header: {
-    height: isIphoneX() ? 66 : 44,
+    height: isIphoneX() ? 88 : 66,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: isIphoneX() ? 22 : 0,
+    paddingTop: isIphoneX() ? 44 : 22,
   },
   header_left: {
     width: 30,
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   header_center_text: {
     fontSize: 18,
-    color: '#09002F',
+    color: '#fff',
     fontWeight: '500',
   },
   header_right: {

@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {View, Text, Image, ActivityIndicator} from 'react-native';
+import {View, Text, ActivityIndicator} from 'react-native';
 import {FlatList, FlatListProps, StyleSheet} from 'react-native';
 import {RefreshControl} from '@byron-react-native/refresh-control';
 import {NativeScrollEvent, NativeSyntheticEvent} from 'react-native';
@@ -78,7 +78,7 @@ function RefreshFlatList<ItemT>(props: RefreshFlatListProps<ItemT>) {
   const refreshControl = props.onHeader ? (
     <RefreshControl
       onRefresh={onHeader}
-      style={{backgroundColor: 'transparent', justifyContent: 'flex-end'}}
+      style={{backgroundColor: '#fff', justifyContent: 'flex-end'}}
     />
   ) : (
     void 0
@@ -117,7 +117,7 @@ const FooterComponent = forwardRef<FooterRef>((props, ref) => {
       case FooterStatus.Refreshing:
         temp = (
           <View style={styles.footer}>
-            <ActivityIndicator color={'#AC9FB0'} size="small" />
+            <ActivityIndicator color={'#fff'} size="small" />
             <Text style={styles.text}>{'努力加载中...'}</Text>
           </View>
         );
@@ -125,10 +125,7 @@ const FooterComponent = forwardRef<FooterRef>((props, ref) => {
       case FooterStatus.NoMoreData:
         temp = (
           <View style={styles.footer}>
-            <Image
-              style={styles.image}
-              source={require('./images/nodata.png')}
-            />
+            <Text style={styles.text}>{'-- 到底了, 滑不动了 --'}</Text>
           </View>
         );
         break;
@@ -153,13 +150,9 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   text: {
-    color: '#AC9FB0',
+    color: '#fff',
     fontSize: 14,
     marginTop: 5,
-  },
-  image: {
-    width: '100%',
-    height: '100%',
   },
 });
 

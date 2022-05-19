@@ -47,7 +47,7 @@ function HomeScreen() {
       ),
     );
     if (err) console.log(' >> fetchList err', err);
-    // console.log(' >> fetchList', res?.data);
+    console.log(' >> fetchList', res?.data);
     if (loading) setLoading(false);
     if (!res) return;
     setList(res.data);
@@ -118,8 +118,8 @@ const ChatInfo = (props: V2TIMConversation) => {
   const toPrivateChat = () => {
     navigation.navigate('Private', {
       ...route.params,
-      userID: msg.userID,
-      nickName: msg.nickName,
+      userID: props.userID,
+      nickName: props.showName,
     });
   };
 
@@ -147,9 +147,9 @@ const ChatInfo = (props: V2TIMConversation) => {
       style={styles.info}
       source={require('./images/info_bg.png')}>
       <TouchableOpacity style={styles.info_wrap} onPress={toPrivateChat}>
-        <Image style={styles.info_left} source={{uri: msg.faceURL}} />
+        <Image style={styles.info_left} source={{uri: props.faceUrl}} />
         <View style={styles.info_center}>
-          <Text style={styles.info_center_name}>{msg.nickName}</Text>
+          <Text style={styles.info_center_name}>{props.showName}</Text>
           <Text style={styles.info_center_desc}>{getText()}</Text>
         </View>
         <View style={styles.info_right}>
