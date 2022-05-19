@@ -112,98 +112,7 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
         }
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
         for (V2TIMMessage *item in msgs) {
-            NSTimeInterval interval = [item.timestamp timeIntervalSince1970] * 1000;
-            NSInteger time = interval;
-            NSString *customData = @"";
-            if (item.elemType == V2TIM_ELEM_TYPE_CUSTOM) {
-                customData = [[NSString alloc] initWithData:item.customElem.data encoding:NSUTF8StringEncoding];
-            }
-            NSMutableArray *imageArr = [[NSMutableArray alloc] init];
-            if (item.elemType == V2TIM_ELEM_TYPE_IMAGE) {
-                NSArray<V2TIMImage *> *imageList = item.imageElem.imageList;
-                for (V2TIMImage *timImage in imageList) {
-                    // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
-                    NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
-                                // 判断 imagePath 下有没有已经下载过的图片文件
-                    if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
-                        // 下载图片
-                        [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
-                            // 下载进度
-                        } succ:^{
-                            // 下载成功
-                            [imageArr addObject:@{
-                                @"uuid": timImage.uuid ? timImage.uuid : @"",
-                                @"type": @(timImage.type),
-                                @"width": @(timImage.width),
-                                @"height": @(timImage.height),
-                                @"url": imagePath
-                            }];
-                        } fail:^(int code, NSString *msg) {
-                            // 下载失败
-                        }];
-                    } else {
-                        // 图片已存在
-                        [imageArr addObject:@{
-                            @"uuid": timImage.uuid ? timImage.uuid : @"",
-                            @"type": @(timImage.type),
-                            @"width": @(timImage.width),
-                            @"height": @(timImage.height),
-                            @"url": imagePath
-                        }];
-                    }
-                }
-            }
-            NSMutableArray *soundArr = [[NSMutableArray alloc] init];
-            if (item.elemType == V2TIM_ELEM_TYPE_SOUND) {
-                V2TIMSoundElem *soundElem = item.soundElem;
-                NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
-                        // 判断 soundPath 下有没有已经下载过的语音文件
-                if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
-                    // 下载语音
-                    [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
-                        // 下载进度
-                    } succ:^{
-                        // 下载成功
-                        [soundArr addObject:@{
-                            @"path": soundPath ? soundPath : @"",
-                            @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                            @"dataSize": @(soundElem.dataSize),
-                            @"duration": @(soundElem.duration)
-                        }];
-                    } fail:^(int code, NSString *msg) {
-                        // 下载失败
-                    }];
-                } else {
-                    // 语音已存在
-                    [soundArr addObject:@{
-                        @"path": soundPath ? soundPath : @"",
-                        @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                        @"dataSize": @(soundElem.dataSize),
-                        @"duration": @(soundElem.duration)
-                    }];
-                }
-            }
-            [msgArr addObject:@{
-                @"msgID": item.msgID ? item.msgID : @"",
-                @"timestamp": @(time),
-                @"sender": item.sender ? item.sender : @"",
-                @"nickName": item.nickName ? item.nickName : @"",
-                @"friendRemark": item.friendRemark ? item.friendRemark : @"",
-                @"nameCard": item.nameCard ? item.nameCard : @"",
-                @"faceURL": item.faceURL ? item.faceURL : @"",
-                @"groupID": item.groupID ? item.groupID : @"",
-                @"userID": item.userID ? item.userID : @"",
-                @"status": @(item.status),
-                @"isSelf": @(item.isSelf),
-                @"isRead": @(item.isRead),
-                @"isPeerRead": @(item.isPeerRead),
-                @"groupAtUserList": item.groupAtUserList ? item.groupAtUserList : @[],
-                @"elemType": @(item.elemType),
-                @"textElem": item.textElem ? @{@"text": item.textElem.text} : @{},
-                @"customElem": item.customElem ? customData : @{},
-                @"imageElem": imageArr,
-                @"soundElem": soundArr
-            }];
+            [msgArr addObject:[self parseMessage:item]];
         }
         resolve(msgArr);
     } fail:^(int code, NSString *desc) {
@@ -224,77 +133,6 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
     [_manager getConversationList:page count:size succ:^(NSArray<V2TIMConversation *> *list, uint64_t nextSeq, BOOL isFinished) {
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
         for (V2TIMConversation *item in list) {
-            NSTimeInterval interval = [item.lastMessage.timestamp timeIntervalSince1970] * 1000;
-            NSInteger time = interval;
-            NSString *customData = @"";
-            if (item.lastMessage.elemType == V2TIM_ELEM_TYPE_CUSTOM) {
-                customData = [[NSString alloc] initWithData:item.lastMessage.customElem.data encoding:NSUTF8StringEncoding];
-            }
-            NSMutableArray *imageArr = [[NSMutableArray alloc] init];
-            if (item.lastMessage.elemType == V2TIM_ELEM_TYPE_IMAGE) {
-                NSArray<V2TIMImage *> *imageList = item.lastMessage.imageElem.imageList;
-                for (V2TIMImage *timImage in imageList) {
-                    // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
-                    NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
-                                // 判断 imagePath 下有没有已经下载过的图片文件
-                    if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
-                        // 下载图片
-                        [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
-                            // 下载进度
-                        } succ:^{
-                            // 下载成功
-                            [imageArr addObject:@{
-                                @"uuid": timImage.uuid ? timImage.uuid : @"",
-                                @"type": @(timImage.type),
-                                @"width": @(timImage.width),
-                                @"height": @(timImage.height),
-                                @"url": imagePath
-                            }];
-                        } fail:^(int code, NSString *msg) {
-                            // 下载失败
-                        }];
-                    } else {
-                        // 图片已存在
-                        [imageArr addObject:@{
-                            @"uuid": timImage.uuid ? timImage.uuid : @"",
-                            @"type": @(timImage.type),
-                            @"width": @(timImage.width),
-                            @"height": @(timImage.height),
-                            @"url": imagePath
-                        }];
-                    }
-                }
-            }
-            NSMutableArray *soundArr = [[NSMutableArray alloc] init];
-            if (item.lastMessage.elemType == V2TIM_ELEM_TYPE_SOUND) {
-                V2TIMSoundElem *soundElem = item.lastMessage.soundElem;
-                NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
-                        // 判断 soundPath 下有没有已经下载过的语音文件
-                if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
-                    // 下载语音
-                    [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
-                        // 下载进度
-                    } succ:^{
-                        // 下载成功
-                        [soundArr addObject:@{
-                            @"path": soundPath ? soundPath : @"",
-                            @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                            @"dataSize": @(soundElem.dataSize),
-                            @"duration": @(soundElem.duration)
-                        }];
-                    } fail:^(int code, NSString *msg) {
-                        // 下载失败
-                    }];
-                } else {
-                    // 语音已存在
-                    [soundArr addObject:@{
-                        @"path": soundPath ? soundPath : @"",
-                        @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                        @"dataSize": @(soundElem.dataSize),
-                        @"duration": @(soundElem.duration)
-                    }];
-                }
-            }
             [msgArr addObject:@{
                 @"type": @(item.type),
                 @"conversationID": item.conversationID ? item.conversationID : @"",
@@ -305,27 +143,7 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                 @"faceUrl": item.faceUrl ? item.faceUrl : @"",
                 @"unreadCount": @(item.unreadCount),
                 @"recvOpt": @(item.recvOpt),
-                @"lastMessage": @{
-                    @"msgID": item.lastMessage.msgID ? item.lastMessage.msgID : @"",
-                    @"timestamp": @(time),
-                    @"sender": item.lastMessage.sender ? item.lastMessage.sender : @"",
-                    @"nickName": item.lastMessage.nickName ? item.lastMessage.nickName : @"",
-                    @"friendRemark": item.lastMessage.friendRemark ? item.lastMessage.friendRemark : @"",
-                    @"nameCard": item.lastMessage.nameCard ? item.lastMessage.nameCard : @"",
-                    @"faceURL": item.lastMessage.faceURL ? item.lastMessage.faceURL : @"",
-                    @"groupID": item.lastMessage.groupID ? item.lastMessage.groupID : @"",
-                    @"userID": item.lastMessage.userID ? item.lastMessage.userID : @"",
-                    @"status": @(item.lastMessage.status),
-                    @"isSelf": @(item.lastMessage.isSelf),
-                    @"isRead": @(item.lastMessage.isRead),
-                    @"isPeerRead": @(item.lastMessage.isPeerRead),
-                    @"groupAtUserList": item.lastMessage.groupAtUserList ? item.lastMessage.groupAtUserList: @[],
-                    @"elemType": @(item.lastMessage.elemType),
-                    @"textElem": item.lastMessage.textElem.text ? @{@"text": item.lastMessage.textElem.text} : @{},
-                    @"customElem": customData,
-                    @"imageElem": imageArr,
-                    @"soundElem": soundArr
-                }
+                @"lastMessage": [self parseMessage:item.lastMessage]
             }];
         }
         resolve(@{
@@ -348,14 +166,23 @@ RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
     if (!(self->_manager)) {
         return;
     }
-    [_manager sendC2CTextMessage:text to:userID succ:^{
-        resolve(nil);
+    V2TIMMessage *msg = [_manager createTextMessage:text];
+    [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
-        NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
+        NSError *err = [NSError errorWithDomain:@"im.sendC2CTextMessage" code:code userInfo:@{
             @"message":desc
         }];
         reject([@(code) stringValue], desc, err);
     }];
+//    [_manager sendC2CTextMessage:text to:userID succ:^{
+//        resolve(nil);
+//    } fail:^(int code, NSString *desc) {
+//        NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
+//            @"message":desc
+//        }];
+//        reject([@(code) stringValue], desc, err);
+//    }];
 }
 
 RCT_EXPORT_METHOD(markC2CMessageAsRead:(NSString *)userID
@@ -382,14 +209,23 @@ RCT_EXPORT_METHOD(sendC2CCustomMessage:(NSString *)userID
         return;
     }
     NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
-    [_manager sendC2CCustomMessage:data to:userID succ:^{
-        resolve(nil);
+    V2TIMMessage *msg = [_manager createCustomMessage:data];
+    [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
-        NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
+        NSError *err = [NSError errorWithDomain:@"im.sendC2CCustomMessage" code:code userInfo:@{
             @"message":desc
         }];
         reject([@(code) stringValue], desc, err);
     }];
+//    [_manager sendC2CCustomMessage:data to:userID succ:^{
+//        resolve(nil);
+//    } fail:^(int code, NSString *desc) {
+//        NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
+//            @"message":desc
+//        }];
+//        reject([@(code) stringValue], desc, err);
+//    }];
 }
 
 RCT_EXPORT_METHOD(sendImageMessage:(NSString *)userID
@@ -401,7 +237,7 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)userID
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve(nil);
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendImageMessage" code:code userInfo:@{
             @"message":desc
@@ -420,7 +256,7 @@ RCT_EXPORT_METHOD(sendSoundMessage:(NSString *)userID
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve(nil);
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendSoundMessage" code:code userInfo:@{
             @"message":desc
@@ -436,8 +272,17 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
     if (self->_manager) {
         return;
     }
-    [_manager sendGroupTextMessage:text to:groupID priority:V2TIM_PRIORITY_NORMAL succ:^{
-        resolve(nil);
+    V2TIMMessage *msg = [_manager createTextMessage:text];
+//    [_manager sendGroupTextMessage:text to:groupID priority:V2TIM_PRIORITY_NORMAL succ:^{
+//        resolve(nil);
+//    } fail:^(int code, NSString *desc) {
+//        NSError *err = [NSError errorWithDomain:@"im.sendGroupTextMessage" code:code userInfo:@{
+//            @"message":desc
+//        }];
+//        reject([@(code) stringValue], desc, err);
+//    }];
+    [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendGroupTextMessage" code:code userInfo:@{
             @"message":desc
@@ -457,7 +302,7 @@ RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
     NSMutableArray * atUserList =[[NSMutableArray alloc] initWithObjects:userID ,nil];
     V2TIMMessage *atMsg = [_manager createTextAtMessage:text atUserList:atUserList];
     [_manager sendMessage:atMsg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve(nil);
+        resolve([self parseMessage:atMsg]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendGroupAtTextMessage" code:code userInfo:@{
             @"message":desc
@@ -475,7 +320,7 @@ RCT_EXPORT_METHOD(sendGroupImageMessage:(NSString *)groupID
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve(nil);
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendImageMessage" code:code userInfo:@{
             @"message":desc
@@ -494,7 +339,7 @@ RCT_EXPORT_METHOD(sendGroupSoundMessage:(NSString *)groupID
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve(nil);
+        resolve([self parseMessage:msg]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendGroupSoundMessage" code:code userInfo:@{
             @"message":desc
@@ -567,6 +412,66 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 }
 
 - (void)onRecvNewMessage:(V2TIMMessage *)msg {
+    [self sendEventWithName:@"NewMessage" body:[self parseMessage:msg]];
+}
+
+// 收到会话新增的回调
+- (void)onNewConversation:(NSArray<V2TIMConversation*> *) conversationList {
+    [self sendEventWithName:@"NewConversation" body:nil];
+}
+
+// 收到会话更新的回调
+- (void)onConversationChanged:(NSArray<V2TIMConversation*> *) conversationList {
+    [self sendEventWithName:@"ConversationChanged" body:nil];
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+//        群成员相关通知
+/////////////////////////////////////////////////////////////////////////////////
+
+/// 有新成员加入群（该群所有的成员都能收到）
+- (void)onMemberEnter:(NSString *)groupID memberList:(NSArray<V2TIMGroupMemberInfo *>*)memberList {
+    NSMutableArray *dictArr = [[NSMutableArray alloc] init];
+    for(V2TIMGroupMemberInfo *item in memberList) {
+        [dictArr addObject:@{
+            @"userID": item.userID ? item.userID : @"",
+            @"nickName": item.nickName ? item.nickName : @"",
+            @"friendRemark": item.friendRemark ? item.friendRemark : @"",
+            @"nameCard": item.nameCard ? item.nameCard : @"",
+            @"faceURL": item.faceURL ? item.faceURL : @""
+        }];
+    }
+    [self sendEventWithName:@"MemberEnter" body:@{@"data": dictArr}];
+}
+
+/// 有成员离开群（该群所有的成员都能收到）
+- (void)onMemberLeave:(NSString *)groupID member:(V2TIMGroupMemberInfo *)member {
+    [self sendEventWithName:@"MemberLeave" body:@{@"data": @{
+        @"userID": member.userID ? member.userID : @"",
+        @"nickName": member.nickName ? member.nickName : @"",
+        @"friendRemark": member.friendRemark ? member.friendRemark : @"",
+        @"nameCard": member.nameCard ? member.nameCard : @"",
+        @"faceURL": member.faceURL ? member.faceURL : @""
+    }}];
+}
+
+- (NSArray<NSString *> *)supportedEvents {
+  return @[
+      @"Connecting",
+      @"ConnectSuccess",
+      @"ConnectFailed",
+      @"KickedOffline",
+      @"UserSigExpired",
+      @"SelfInfoUpdated",
+      @"NewMessage",
+      @"NewConversation",
+      @"ConversationChanged",
+      @"MemberEnter",
+      @"MemberLeave"
+  ];
+}
+
+-(NSDictionary *)parseMessage:(V2TIMMessage *)msg {
     NSTimeInterval interval = [msg.timestamp timeIntervalSince1970] * 1000;
     NSInteger time = interval;
     NSString *customData = @"";
@@ -638,7 +543,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
             }];
         }
     }
-    [self sendEventWithName:@"NewMessage" body:@{
+    return @{
         @"msgID": msg.msgID ? msg.msgID : @"",
         @"timestamp": @(time),
         @"sender": msg.sender ? msg.sender : @"",
@@ -658,63 +563,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         @"customElem": msg.customElem ? customData : @{},
         @"imageElem": imageArr,
         @"soundElem": soundArr
-    }];
-}
-
-// 收到会话新增的回调
-- (void)onNewConversation:(NSArray<V2TIMConversation*> *) conversationList {
-    [self sendEventWithName:@"NewConversation" body:nil];
-}
-
-// 收到会话更新的回调
-- (void)onConversationChanged:(NSArray<V2TIMConversation*> *) conversationList {
-    [self sendEventWithName:@"ConversationChanged" body:nil];
-}
-
-/////////////////////////////////////////////////////////////////////////////////
-//        群成员相关通知
-/////////////////////////////////////////////////////////////////////////////////
-
-/// 有新成员加入群（该群所有的成员都能收到）
-- (void)onMemberEnter:(NSString *)groupID memberList:(NSArray<V2TIMGroupMemberInfo *>*)memberList {
-    NSMutableArray *dictArr = [[NSMutableArray alloc] init];
-    for(V2TIMGroupMemberInfo *item in memberList) {
-        [dictArr addObject:@{
-            @"userID": item.userID ? item.userID : @"",
-            @"nickName": item.nickName ? item.nickName : @"",
-            @"friendRemark": item.friendRemark ? item.friendRemark : @"",
-            @"nameCard": item.nameCard ? item.nameCard : @"",
-            @"faceURL": item.faceURL ? item.faceURL : @""
-        }];
-    }
-    [self sendEventWithName:@"MemberEnter" body:@{@"data": dictArr}];
-}
-
-/// 有成员离开群（该群所有的成员都能收到）
-- (void)onMemberLeave:(NSString *)groupID member:(V2TIMGroupMemberInfo *)member {
-    [self sendEventWithName:@"MemberLeave" body:@{@"data": @{
-        @"userID": member.userID ? member.userID : @"",
-        @"nickName": member.nickName ? member.nickName : @"",
-        @"friendRemark": member.friendRemark ? member.friendRemark : @"",
-        @"nameCard": member.nameCard ? member.nameCard : @"",
-        @"faceURL": member.faceURL ? member.faceURL : @""
-    }}];
-}
-
-- (NSArray<NSString *> *)supportedEvents {
-  return @[
-      @"Connecting",
-      @"ConnectSuccess",
-      @"ConnectFailed",
-      @"KickedOffline",
-      @"UserSigExpired",
-      @"SelfInfoUpdated",
-      @"NewMessage",
-      @"NewConversation",
-      @"ConversationChanged",
-      @"MemberEnter",
-      @"MemberLeave"
-  ];
+    };
 }
 
 @end
