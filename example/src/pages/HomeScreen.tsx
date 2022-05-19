@@ -4,7 +4,8 @@ import {TouchableOpacity, ActivityIndicator} from 'react-native';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {RouteProp, useRoute} from '@react-navigation/native';
 import RefreshFlatList, {FooterStatus} from '../components/RefreshFlat';
-import {ImSdk, V2TIMElemType} from '@byron-react-native/tencent-im';
+import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
+import {V2TIMElemType} from '@byron-react-native/tencent-im';
 import {V2TIMConversation} from '@byron-react-native/tencent-im';
 import {ImageBackground, SafeAreaView} from 'react-native';
 import {to} from '../utils';
@@ -36,22 +37,29 @@ function HomeScreen() {
   const navigation = useNavigation<NavigationProp<Routes>>();
 
   useEffect(() => {
-    fetchList();
+    fetchList(true);
+    ImSdk.addListener(ImSdkEventType.NewConversation, () => {
+      fetchList(true);
+    });
+    ImSdk.addListener(ImSdkEventType.ConversationChanged, () => {
+      fetchList(true);
+    });
   }, []);
 
-  const fetchList = async (initPage?: number) => {
+  const fetchList = async (isFirst = false) => {
     const [err, res] = await to(
-      ImSdk.getConversationList(
-        typeof initPage === 'number' ? initPage : page,
-        10,
-      ),
+      ImSdk.getConversationList(isFirst ? 0 : page, 10),
     );
     if (err) console.log(' >> fetchList err', err);
     console.log(' >> fetchList', res);
     if (loading) setLoading(false);
     if (!res) return;
-    setList(res.data);
     setPage(res.page);
+    if (isFirst) {
+      setList(res.data);
+    } else {
+      setList(list.concat(res.data));
+    }
     setIsFinished(res.is_finished);
     return res;
   };
@@ -61,7 +69,7 @@ function HomeScreen() {
   };
 
   const onHeader = async () => {
-    await fetchList(0);
+    await fetchList(true);
   };
 
   const onFooter = async () => {

@@ -1,8 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react';
 import {View, Text, ActivityIndicator} from 'react-native';
 import {ImageBackground, StyleSheet, EmitterSubscription} from 'react-native';
-import {TouchableWithoutFeedback, Keyboard} from 'react-native';
-import {KeyboardAvoidingView} from 'react-native';
+import {KeyboardAvoidingView, Keyboard} from 'react-native';
 import {ImSdk, V2TIMMessage} from '@byron-react-native/tencent-im';
 import {ImSdkEventType} from '@byron-react-native/tencent-im';
 import {RouteProp, useRoute} from '@react-navigation/native';
@@ -30,12 +29,15 @@ function PrivateChat() {
   const [list, setList] = useState<V2TIMMessage[]>([]);
   const route = useRoute<RouteProp<Routes, 'Private'>>();
   const navigation = useNavigation<NavigationProp<Routes>>();
-  const subNewMessage = useRef<EmitterSubscription>();
-  const subConversation = useRef<EmitterSubscription>();
+  const subscription = useRef<EmitterSubscription>();
+  const listRef = useRef(list);
+
+  useEffect(() => {
+    listRef.current = list;
+  });
 
   const onBlur = () => {
-    subNewMessage.current?.remove();
-    subConversation.current?.remove();
+    subscription.current?.remove();
     console.log(' >> PrivateChat onBlur', route.params);
   };
 
@@ -44,17 +46,11 @@ function PrivateChat() {
     fetchList(true).then(() => {
       ImSdk.markC2CMessageAsRead(route.params.userID);
     });
-    subNewMessage.current = ImSdk.addListener(
+    subscription.current = ImSdk.addListener(
       ImSdkEventType.NewMessage,
-      data => {
+      (data: V2TIMMessage) => {
         console.log(' >> NewMessage', data);
-      },
-    );
-
-    subConversation.current = ImSdk.addListener(
-      ImSdkEventType.ConversationChanged,
-      data => {
-        console.log(' >> ConversationChanged', data);
+        setList([data].concat(listRef.current));
       },
     );
 
@@ -63,13 +59,17 @@ function PrivateChat() {
 
   const fetchList = async (isFirst = false) => {
     const [err, res] = await to(
-      ImSdk.getC2CHistoryMessageList(route.params.userID, 20, isFirst),
+      ImSdk.getC2CHistoryMessageList(route.params.userID, 10, isFirst),
     );
     if (err) console.log(' >> fetchList err', err);
     console.log(' >> getC2CHistoryMessageList', res);
     setLoading(false);
     if (!res) return;
-    setList(res);
+    if (isFirst) {
+      setList(res);
+    } else {
+      setList(list.concat(res));
+    }
   };
 
   useEffect(() => {
@@ -109,32 +109,32 @@ function PrivateChat() {
     Keyboard.dismiss();
   };
 
+  const onFooter = async () => {
+    await fetchList();
+  };
+
   return (
     <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
       <ImageBackground style={{flex: 1}} source={require('./images/bg1.png')}>
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <View style={{flex: 1}}>
-            <Header title={route.params.nickName} />
-            {loading ? (
-              <View style={styles.loading}>
-                <ActivityIndicator size={'large'} color={'#fff'} />
-              </View>
-            ) : !list.length ? (
-              <View style={styles.loading}>
-                <Text style={{color: '#fff'}}>暂无数据</Text>
-              </View>
-            ) : (
-              <RefreshFlatList
-                data={list}
-                style={{flex: 1}}
-                inverted={true}
-                refreshing={false}
-                renderItem={renderItem}
-              />
-            )}
-            <InputTools onPic={onPic} onTalk={onTalk} onSend={onSend} />
+        <Header title={route.params.nickName} />
+        {loading ? (
+          <View style={styles.loading}>
+            <ActivityIndicator size={'large'} color={'#fff'} />
           </View>
-        </TouchableWithoutFeedback>
+        ) : !list.length ? (
+          <View style={styles.loading}>
+            <Text style={{color: '#fff'}}>暂无数据</Text>
+          </View>
+        ) : (
+          <RefreshFlatList
+            data={list}
+            style={{flex: 1}}
+            inverted={true}
+            renderItem={renderItem}
+            onFooter={onFooter}
+          />
+        )}
+        <InputTools onPic={onPic} onTalk={onTalk} onSend={onSend} />
       </ImageBackground>
     </KeyboardAvoidingView>
   );
