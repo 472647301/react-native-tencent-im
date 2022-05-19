@@ -58,6 +58,7 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 5,
     paddingVertical: 5,
+    color: '#fff'
   },
   add: {
     width: 36,
