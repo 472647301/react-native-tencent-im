@@ -102,11 +102,13 @@ function PrivateChat() {
   const onTalk = () => {};
 
   const onSend = async (val: string) => {
-    const [err, _res] = await to(
+    const [err, res] = await to(
       ImSdk.sendC2CTextMessage(val, route.params.userID),
     );
     if (err) console.log(' >> sendC2CTextMessage', err);
     Keyboard.dismiss();
+    if (!res) return;
+    setList([res].concat(listRef.current));
   };
 
   const onFooter = async () => {
