@@ -588,7 +588,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
 
         WritableMap map = Arguments.createMap();
         WritableMap textElem = Arguments.createMap();
-        textElem.putString("text", msg.getTextElem().getText());
+        if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_TEXT) {
+            textElem.putString("text", msg.getTextElem().getText());
+        } else {
+            textElem.putString("text", "");
+        }
         map.putString("msgID", msg.getMsgID());
         map.putInt("timestamp", (int)msg.getTimestamp());
         map.putString("sender", msg.getSender());
