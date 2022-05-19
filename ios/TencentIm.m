@@ -125,9 +125,9 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                         // 下载成功
                         [imageArr addObject:@{
                             @"uuid": timImage.uuid ? timImage.uuid : @"",
-                            @"type": timImage.type ? @(timImage.type) : @(0),
-                            @"width": timImage.width ? @(timImage.width) : @(0),
-                            @"height": timImage.height ? @(timImage.height) : @(0),
+                            @"type": @(timImage.type),
+                            @"width": @(timImage.width),
+                            @"height": @(timImage.height),
                             @"url": imagePath
                         }];
                     } fail:^(int code, NSString *msg) {
@@ -137,9 +137,9 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                     // 图片已存在
                     [imageArr addObject:@{
                         @"uuid": timImage.uuid ? timImage.uuid : @"",
-                        @"type": timImage.type ? @(timImage.type) : @(0),
-                        @"width": timImage.width ? @(timImage.width) : @(0),
-                        @"height": timImage.height ? @(timImage.height) : @(0),
+                        @"type": @(timImage.type),
+                        @"width": @(timImage.width),
+                        @"height": @(timImage.height),
                         @"url": imagePath
                     }];
                 }
@@ -157,8 +157,8 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                     [soundArr addObject:@{
                         @"path": soundPath ? soundPath : @"",
                         @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                        @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
-                        @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                        @"dataSize": @(soundElem.dataSize),
+                        @"duration": @(soundElem.duration)
                     }];
                 } fail:^(int code, NSString *msg) {
                     // 下载失败
@@ -168,8 +168,8 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                 [soundArr addObject:@{
                     @"path": soundPath ? soundPath : @"",
                     @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                    @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
-                    @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                    @"dataSize": @(soundElem.dataSize),
+                    @"duration": @(soundElem.duration)
                 }];
             }
             [msgArr addObject:@{
@@ -230,9 +230,9 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                         // 下载成功
                         [imageArr addObject:@{
                             @"uuid": timImage.uuid ? timImage.uuid : @"",
-                            @"type": timImage.type ? @(timImage.type) : @(0),
-                            @"width": timImage.width ? @(timImage.width) : @(0),
-                            @"height": timImage.height ? @(timImage.height) : @(0),
+                            @"type": @(timImage.type),
+                            @"width": @(timImage.width),
+                            @"height": @(timImage.height),
                             @"url": imagePath
                         }];
                     } fail:^(int code, NSString *msg) {
@@ -242,9 +242,9 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                     // 图片已存在
                     [imageArr addObject:@{
                         @"uuid": timImage.uuid ? timImage.uuid : @"",
-                        @"type": timImage.type ? @(timImage.type) : @(0),
-                        @"width": timImage.width ? @(timImage.width) : @(0),
-                        @"height": timImage.height ? @(timImage.height) : @(0),
+                        @"type": @(timImage.type),
+                        @"width": @(timImage.width),
+                        @"height": @(timImage.height),
                         @"url": imagePath
                     }];
                 }
@@ -262,8 +262,8 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                     [soundArr addObject:@{
                         @"path": soundPath ? soundPath : @"",
                         @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                        @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
-                        @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                        @"dataSize": @(soundElem.dataSize),
+                        @"duration": @(soundElem.duration)
                     }];
                 } fail:^(int code, NSString *msg) {
                     // 下载失败
@@ -273,8 +273,8 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                 [soundArr addObject:@{
                     @"path": soundPath ? soundPath : @"",
                     @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                    @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
-                    @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                    @"dataSize": @(soundElem.dataSize),
+                    @"duration": @(soundElem.duration)
                 }];
             }
             [msgArr addObject:@{
@@ -285,8 +285,8 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                 @"groupType": item.groupType ? item.groupType : @"",
                 @"showName": item.showName ? item.showName : @"",
                 @"faceUrl": item.faceUrl ? item.faceUrl : @"",
-                @"unreadCount": item.unreadCount ? @(item.unreadCount) : @(0),
-                @"recvOpt": item.recvOpt ? @(item.recvOpt) : @(0),
+                @"unreadCount": @(item.unreadCount),
+                @"recvOpt": @(item.recvOpt),
                 @"lastMessage": @{
                     @"msgID": item.lastMessage.msgID ? item.lastMessage.msgID : @"",
                     @"timestamp": @(time),
@@ -297,12 +297,12 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                     @"faceURL": item.lastMessage.faceURL ? item.lastMessage.faceURL : @"",
                     @"groupID": item.lastMessage.groupID ? item.lastMessage.groupID : @"",
                     @"userID": item.lastMessage.userID ? item.lastMessage.userID : @"",
-                    @"status": item.lastMessage.status ? @(item.lastMessage.status) : @(0),
-                    @"isSelf": item.lastMessage.isSelf ? @(item.lastMessage.isSelf) : @(NO),
-                    @"isRead": item.lastMessage.isSelf ? @(item.lastMessage.isRead) : @(NO),
-                    @"isPeerRead": item.lastMessage.isPeerRead ? @(item.lastMessage.isPeerRead) : @(NO),
+                    @"status": @(item.lastMessage.status),
+                    @"isSelf": @(item.lastMessage.isSelf),
+                    @"isRead": @(item.lastMessage.isRead),
+                    @"isPeerRead": @(item.lastMessage.isPeerRead),
                     @"groupAtUserList": item.lastMessage.groupAtUserList ? item.lastMessage.groupAtUserList: @[],
-                    @"elemType": item.lastMessage.elemType ? @(item.lastMessage.elemType) : @(0),
+                    @"elemType": @(item.lastMessage.elemType),
                     @"textElem": item.lastMessage.textElem.text ? @{@"text": item.lastMessage.textElem.text} : @{},
                     @"customElem": customData,
                     @"imageElem": imageArr,
@@ -580,9 +580,9 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                     // 下载成功
                     [imageArr addObject:@{
                         @"uuid": timImage.uuid ? timImage.uuid : @"",
-                        @"type": timImage.type ? @(timImage.type) : @(0),
-                        @"width": timImage.width ? @(timImage.width) : @(0),
-                        @"height": timImage.height ? @(timImage.height) : @(0),
+                        @"type": @(timImage.type),
+                        @"width": @(timImage.width),
+                        @"height": @(timImage.height),
                         @"url": imagePath
                     }];
                 } fail:^(int code, NSString *msg) {
@@ -592,9 +592,9 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                 // 图片已存在
                 [imageArr addObject:@{
                     @"uuid": timImage.uuid ? timImage.uuid : @"",
-                    @"type": timImage.type ? @(timImage.type) : @(0),
-                    @"width": timImage.width ? @(timImage.width) : @(0),
-                    @"height": timImage.height ? @(timImage.height) : @(0),
+                    @"type": @(timImage.type),
+                    @"width": @(timImage.width),
+                    @"height": @(timImage.height),
                     @"url": imagePath
                 }];
             }
@@ -621,8 +621,8 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                 [soundArr addObject:@{
                     @"path": soundPath ? soundPath : @"",
                     @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                    @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
-                    @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                    @"dataSize": @(soundElem.dataSize),
+                    @"duration": @(soundElem.duration)
                 }];
             } fail:^(int code, NSString *msg) {
                 // 下载失败
@@ -632,8 +632,8 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
             [soundArr addObject:@{
                 @"path": soundPath ? soundPath : @"",
                 @"uuid": soundElem.uuid ? soundElem.uuid : @"",
-                @"dataSize": soundElem.dataSize ? @(soundElem.dataSize) : @(0),
-                @"duration": soundElem.duration ? @(soundElem.duration) : @(0)
+                @"dataSize": @(soundElem.dataSize),
+                @"duration": @(soundElem.duration)
             }];
         }
         [self sendEventWithName:@"NewMessage" body:@{
