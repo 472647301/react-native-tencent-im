@@ -301,6 +301,7 @@ declare module "@byron-react-native/tencent-im" {
       data: V2TIMConversation[];
     }>;
     static sendC2CTextMessage: (text: string, userID: string) => Promise<void>;
+    static markC2CMessageAsRead: (userID: string) => Promise<void>;
     static sendC2CCustomMessage: (userID: string, params: any) => Promise<void>;
     static sendImageMessage: (
       userID: string,
