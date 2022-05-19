@@ -443,6 +443,24 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void markC2CMessageAsRead(String userID, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        messageManager.markC2CMessageAsRead(userID, new V2TIMCallback() {
+            @Override
+            public void onError(int i, String s) {
+                promise.reject(i + "", new Exception(s));
+            }
+
+            @Override
+            public void onSuccess() {
+                promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
     public void sendC2CCustomMessage(String userID, ReadableMap params, Promise promise) {
         if (manager == null) {
             return;
