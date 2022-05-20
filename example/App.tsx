@@ -31,14 +31,25 @@ const subscriptions = [
   ImSdkEventType.SelfInfoUpdated,
 ];
 
-async function hasPhotoPermission() {
+async function hasPermission() {
   if (Platform.OS === 'ios') {
     return;
   }
-  const permission = PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE;
-  const hasPermission = await PermissionsAndroid.check(permission);
-  if (!hasPermission) {
-    await PermissionsAndroid.request(permission);
+  const RECORD_AUDIO = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+  );
+  if (!RECORD_AUDIO) {
+    await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+    );
+  }
+  const WRITE_EXTERNAL_STORAGE = await PermissionsAndroid.check(
+    PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+  );
+  if (!WRITE_EXTERNAL_STORAGE) {
+    await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+    );
   }
 }
 
@@ -46,7 +57,7 @@ function App() {
   const [groupID, setGroupID] = useState('');
 
   useEffect(() => {
-    hasPhotoPermission();
+    hasPermission();
     const initImSDK = async () => {
       const res = await login_im_sdk();
       if (res && res.id && res.sig) {

@@ -1,5 +1,5 @@
 import React, {useRef, useState, useEffect} from 'react';
-import {View, Text, ActivityIndicator} from 'react-native';
+import {View, Text, ActivityIndicator, Platform} from 'react-native';
 import {ImageBackground, StyleSheet, EmitterSubscription} from 'react-native';
 import {KeyboardAvoidingView, Keyboard} from 'react-native';
 import {ImSdk, V2TIMMessage} from '@byron-react-native/tencent-im';
@@ -12,6 +12,7 @@ import {Header} from '../components/Header';
 import {to} from '../utils';
 import {PrivateMessage} from '../components/Message';
 import {launchImageLibrary} from 'react-native-image-picker';
+import {Player} from '@react-native-community/audio-toolkit';
 
 type Params = {
   groupID: string;
@@ -95,7 +96,10 @@ function PrivateChat() {
       console.log(' >> image.uri', image.uri);
       console.log(' >> image.uri.split', image.uri.split('file://')[1]);
       const [err, res] = await to(
-        ImSdk.sendImageMessage(route.params.userID, image.uri.split('file://')[1]),
+        ImSdk.sendImageMessage(
+          route.params.userID,
+          image.uri.split('file://')[1],
+        ),
       );
       if (err) console.log(' >> sendImageMessage', err);
       if (!res) return;
@@ -103,7 +107,22 @@ function PrivateChat() {
     }
   };
 
-  const onTalk = () => {};
+  const onTalk = async (path: string) => {
+    const player = new Player(
+      Platform.OS === 'android' ? `file://${path}` : path,
+    );
+    player.duration;
+    const [err, res] = await to(
+      ImSdk.sendSoundMessage(
+        route.params.userID,
+        path,
+        Math.ceil(player.duration / 1000),
+      ),
+    );
+    if (err) console.log(' >> sendSoundMessage', err);
+    if (!res) return;
+    setList([res].concat(listRef.current));
+  };
 
   const onSend = async (val: string) => {
     if (val === '123') {

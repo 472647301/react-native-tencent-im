@@ -1,16 +1,18 @@
-import React, {useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {Image, ImageBackground, TouchableOpacity} from 'react-native';
 import {StyleSheet, Dimensions, TextInput, Text} from 'react-native';
+import {Recorder} from '@react-native-community/audio-toolkit';
 
 const {width} = Dimensions.get('window');
 
 interface InputToolsProps {
-  onTalk: () => void;
+  onTalk: (path: string) => void;
   onPic: () => void;
   onSend: (value: string) => void;
 }
 
 function InputTools(props: Partial<InputToolsProps>) {
+  const recordRef = useRef<Recorder>();
   const [value, setVlaue] = useState('');
 
   const onSend = () => {
@@ -21,9 +23,46 @@ function InputTools(props: Partial<InputToolsProps>) {
     setVlaue('');
   };
 
+  const onLongPress = () => {
+    console.log(' >> onLongPress');
+    recordRef.current = new Recorder(`${Date.now()}.aac`, {
+      bitrate: 128000,
+      channels: 2,
+      sampleRate: 44100,
+      format: 'aac',
+      encoder: 'aac',
+      quality: 'medium',
+    });
+    recordRef.current.prepare(err => {
+      if (err) {
+        console.log(' >> Recorder prepare:', err);
+        return;
+      }
+      recordRef.current?.record(err => {
+        if (err) {
+          console.log(' >> Recorder record:', err);
+          return;
+        }
+      });
+    });
+  };
+
+  const onTalk = () => {
+    if (!recordRef.current) {
+      return;
+    }
+    console.log(' >> onTalk', recordRef.current.fsPath);
+    props.onTalk && props.onTalk(recordRef.current.fsPath);
+    recordRef.current?.destroy();
+    recordRef.current = void 0;
+  };
+
   return (
     <ImageBackground style={styles.tools} source={require('./images/bg.png')}>
-      <TouchableOpacity style={styles.talk} onPress={props.onTalk}>
+      <TouchableOpacity
+        style={styles.talk}
+        onLongPress={onLongPress}
+        onPressOut={onTalk}>
         <Image style={styles.talk} source={require('./images/talk.png')} />
       </TouchableOpacity>
       <TextInput style={styles.input} onChangeText={setVlaue} value={value} />
