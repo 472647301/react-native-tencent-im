@@ -36,7 +36,9 @@ import com.tencent.imsdk.v2.V2TIMValueCallback;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TencentImModule extends ReactContextBaseJavaModule {
 
@@ -46,7 +48,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private V2TIMMessageManager messageManager;
     private V2TIMConversationManager conversationManager;
     private V2TIMMessage lastMsg;
-    private int index = 0;
+    private int indexConversation = 0;
+    private int indexMessage = 0;
+    private Map<String, String> indexImage = new HashMap<>();
 
     public TencentImModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -158,6 +162,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         if (isFirst) {
             lastMsg = null;
         }
+        indexMessage = 0;
         messageManager.getC2CHistoryMessageList(userID, size, lastMsg, new V2TIMValueCallback<List<V2TIMMessage>>() {
             @Override
             public void onError(int var1, String var2) {
@@ -174,10 +179,10 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         @Override
                         public void onSuccess(WritableMap map) {
                             msgArr.pushMap(map);
-                            index = index + 1;
-                            if (index == v2TIMMessages.size()) {
+                            indexMessage = indexMessage + 1;
+                            if (indexMessage == v2TIMMessages.size()) {
+                                indexMessage = 0;
                                 promise.resolve(msgArr);
-                                index = 0;
                             }
                         }
                     });
@@ -191,6 +196,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         if (manager == null) {
             return;
         }
+        indexConversation = 0;
         conversationManager.getConversationList((long) page, size, new V2TIMValueCallback<V2TIMConversationResult>() {
             @Override
             public void onError(int code, String desc) {
@@ -218,10 +224,10 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         public void onSuccess(WritableMap map) {
                             data.putMap("lastMessage", map);
                             msgArr.pushMap(data);
-                            index = index + 1;
-                            if (index == v2TIMConversationResult.getConversationList().size()) {
+                            indexConversation = indexConversation + 1;
+                            if (indexConversation == v2TIMConversationResult.getConversationList().size()) {
                                 body.putArray("data", msgArr);
-                                index = 0;
+                                indexConversation = 0;
                                 promise.resolve(body);
                             }
                         }
@@ -390,7 +396,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onProgress(int progress) {
-                // 上传进度（0-100）
+
             }
         });
     }
@@ -416,7 +422,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onProgress(int progress) {
-                // 上传进度（0-100）
+
             }
         });
     }
@@ -442,7 +448,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onProgress(int progress) {
-                // 上传进度（0-100）
+
             }
         });
     }
@@ -576,104 +582,6 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             groupAtUserList.pushString(str);
         }
 
-        if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
-            for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
-                String uuid = v2TIMImage.getUUID();
-                WritableMap data = Arguments.createMap();
-                String imagePath = reactContext.getFilesDir().getPath() + "/im_image/" + uuid;
-                File imageFile = new File(imagePath);
-                switch (v2TIMImage.getType()) {
-                    case 0:
-                        map.putString("imageOriginalUUID", "file://" + imagePath);
-                        break;
-                    case 1:
-                        map.putString("imageThumbUUID", "file://" + imagePath);
-                        break;
-                    case 2:
-                        map.putString("imageLargeUUID", "file://" + imagePath);
-                        break;
-                }
-                if (!imageFile.exists()) {
-                    v2TIMImage.downloadImage(imagePath, new V2TIMDownloadCallback() {
-                        @Override
-                        public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
-
-                        }
-                        @Override
-                        public void onError(int code, String desc) {
-                            if (v2TIMImage.getType() == 1) {
-                                cb.onSuccess(map);
-                            }
-                        }
-                        @Override
-                        public void onSuccess() {
-                            if (v2TIMImage.getType() == 1) {
-                                data.putString("uuid", uuid);
-                                data.putInt("type", v2TIMImage.getType());
-                                data.putInt("width", v2TIMImage.getWidth());
-                                data.putInt("height", v2TIMImage.getHeight());
-                                data.putString("url", "file://" + imagePath);
-                                map.putMap("imageThumb", data);
-                                cb.onSuccess(map);
-                            }
-                        }
-                    });
-                } else {
-                    data.putString("uuid", uuid);
-                    data.putInt("type", v2TIMImage.getType());
-                    data.putInt("width", v2TIMImage.getWidth());
-                    data.putInt("height", v2TIMImage.getHeight());
-                    data.putString("url", "file://" + imagePath);
-                    switch (v2TIMImage.getType()) {
-                        case 0:
-                            map.putMap("imageOriginal", data);
-                            break;
-                        case 1:
-                            map.putMap("imageThumb", data);
-                            break;
-                        case 2:
-                            map.putMap("imageLarge", data);
-                            break;
-                    }
-                }
-            }
-        }
-
-        if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_SOUND) {
-            V2TIMSoundElem v2TIMSoundElem = msg.getSoundElem();
-            String uuid = v2TIMSoundElem.getUUID();
-            WritableMap data = Arguments.createMap();
-            String soundPath = reactContext.getFilesDir().getPath() + "/im_sound/" + uuid;
-            File soundFile = new File(soundPath);
-            if (!soundFile.exists()) {
-                v2TIMSoundElem.downloadSound(soundPath, new V2TIMDownloadCallback() {
-                    @Override
-                    public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
-
-                    }
-                    @Override
-                    public void onError(int code, String desc) {
-                        cb.onSuccess(map);
-                    }
-                    @Override
-                    public void onSuccess() {
-                        data.putString("path", "file://" + soundPath);
-                        data.putString("uuid", uuid);
-                        data.putInt("dataSize", v2TIMSoundElem.getDataSize());
-                        data.putInt("duration", v2TIMSoundElem.getDuration());
-                        map.putMap("soundElem", data);
-                        cb.onSuccess(map);
-                    }
-                });
-            } else {
-                data.putString("path", "file://" + soundPath);
-                data.putString("uuid", uuid);
-                data.putInt("dataSize", v2TIMSoundElem.getDataSize());
-                data.putInt("duration", v2TIMSoundElem.getDuration());
-                map.putMap("soundElem", data);
-            }
-        }
-
         WritableMap textElem = Arguments.createMap();
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_TEXT) {
             textElem.putString("text", msg.getTextElem().getText());
@@ -702,8 +610,121 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 customElem = customElem.substring(12, customElem.length() - 1);
             }
             map.putString("customElem", customElem);
+            cb.onSuccess(map);
+        } else if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
+            indexImage.put(msg.getMsgID(), "0");
+            for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
+                String uuid = v2TIMImage.getUUID();
+                WritableMap data = Arguments.createMap();
+                String imagePath = reactContext.getFilesDir().getPath() + "/im_image/" + uuid;
+                File imageFile = new File(imagePath);
+                data.putString("uuid", uuid);
+                data.putInt("type", v2TIMImage.getType());
+                data.putInt("width", v2TIMImage.getWidth());
+                data.putInt("height", v2TIMImage.getHeight());
+                data.putString("url", "file://" + imagePath);
+                switch (v2TIMImage.getType()) {
+                    case 0:
+                        map.putMap("imageOriginal", data);
+                        break;
+                    case 1:
+                        map.putMap("imageThumb", data);
+                        break;
+                    case 2:
+                        map.putMap("imageLarge", data);
+                        break;
+                }
+                File dir = imageFile.getParentFile();
+                if(dir != null && !dir.exists()) {
+                    if (!dir.mkdirs()) {
+                        cb.onSuccess(map);
+                        return;
+                    }
+                }
+                if (!imageFile.exists()) {
+                    v2TIMImage.downloadImage(imagePath, new V2TIMDownloadCallback() {
+                        @Override
+                        public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
+
+                        }
+                        @Override
+                        public void onError(int code, String desc) {
+                            String index = indexImage.get(msg.getMsgID());
+                            indexImage.remove(msg.getMsgID());
+                            if (index != null) {
+                                int newIndex = Integer.parseInt(index) + 1;
+                                indexImage.put(msg.getMsgID(), String.valueOf(newIndex));
+                                if (newIndex == msg.getImageElem().getImageList().size()) {
+                                    indexImage.remove(msg.getMsgID());
+                                    cb.onSuccess(map);
+                                }
+                            }
+                        }
+                        @Override
+                        public void onSuccess() {
+                            String index = indexImage.get(msg.getMsgID());
+                            indexImage.remove(msg.getMsgID());
+                            if (index != null) {
+                                int newIndex = Integer.parseInt(index) + 1;
+                                indexImage.put(msg.getMsgID(), String.valueOf(newIndex));
+                                if (newIndex == msg.getImageElem().getImageList().size()) {
+                                    indexImage.remove(msg.getMsgID());
+                                    cb.onSuccess(map);
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    String index = indexImage.get(msg.getMsgID());
+                    indexImage.remove(msg.getMsgID());
+                    if (index != null) {
+                        int newIndex = Integer.parseInt(index) + 1;
+                        indexImage.put(msg.getMsgID(), String.valueOf(newIndex));
+                        if (newIndex == msg.getImageElem().getImageList().size()) {
+                            indexImage.remove(msg.getMsgID());
+                            cb.onSuccess(map);
+                        }
+                    }
+                }
+            }
+        } else if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_SOUND) {
+            V2TIMSoundElem v2TIMSoundElem = msg.getSoundElem();
+            String uuid = v2TIMSoundElem.getUUID();
+            WritableMap data = Arguments.createMap();
+            String soundPath = reactContext.getFilesDir().getPath() + "/im_sound/" + uuid;
+            data.putString("path", "file://" + soundPath);
+            data.putString("uuid", uuid);
+            data.putInt("dataSize", v2TIMSoundElem.getDataSize());
+            data.putInt("duration", v2TIMSoundElem.getDuration());
+            map.putMap("soundElem", data);
+            File soundFile = new File(soundPath);
+            if (!soundFile.exists()) {
+                File dir = soundFile.getParentFile();
+                if(dir != null && !dir.exists()) {
+                    if (!dir.mkdirs()) {
+                        cb.onSuccess(map);
+                        return;
+                    }
+                }
+                v2TIMSoundElem.downloadSound(soundPath, new V2TIMDownloadCallback() {
+                    @Override
+                    public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
+
+                    }
+                    @Override
+                    public void onError(int code, String desc) {
+                        cb.onSuccess(map);
+                    }
+                    @Override
+                    public void onSuccess() {
+                        cb.onSuccess(map);
+                    }
+                });
+            } else {
+                cb.onSuccess(map);
+            }
         } else {
-            map.putString("customElem", "{}");
+            cb.onSuccess(map);
         }
     };
 
