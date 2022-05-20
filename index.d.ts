@@ -125,10 +125,7 @@ declare module "@byron-react-native/tencent-im" {
     textElem: { text: string };
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_CUSTOM，customElem 会存储自定义消息内容
-    /**
-     * '{ NativeMap: {"abc":"123"} }'
-     */
-    customElem: any;
+    customElem: string;
 
     /// 消息类型 为 V2TIM_ELEM_TYPE_IMAGE，imageElem 会存储图片消息内容
     imageElem: ImSdkImageElem[];
