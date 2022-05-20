@@ -43,7 +43,8 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
       return (
         <View style={styles.image}>
           <Image
-            source={{uri: `file://${elem.url}`}}
+            source={{uri: elem.url}}
+            defaultSource={require('./images/image_error.png')}
             style={{width: elem.width, height: elem.height}}
             onError={err => console.log(' >> Image', err.nativeEvent.error)}
           />
