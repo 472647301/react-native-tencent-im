@@ -111,7 +111,10 @@ function PrivateChat() {
     const player = new Player(
       Platform.OS === 'android' ? `file://${path}` : path,
     );
-    player.duration;
+    // fix AudioPlayerModule: playerId 0 not found
+    if (Platform.OS === 'android') {
+      player.speed = 0.0;
+    }
     const [err, res] = await to(
       ImSdk.sendSoundMessage(
         route.params.userID,
