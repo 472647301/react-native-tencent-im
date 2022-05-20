@@ -21,7 +21,6 @@ import com.tencent.imsdk.v2.V2TIMConversation;
 import com.tencent.imsdk.v2.V2TIMConversationListener;
 import com.tencent.imsdk.v2.V2TIMConversationManager;
 import com.tencent.imsdk.v2.V2TIMConversationResult;
-import com.tencent.imsdk.v2.V2TIMCustomElem;
 import com.tencent.imsdk.v2.V2TIMDownloadCallback;
 import com.tencent.imsdk.v2.V2TIMElem;
 import com.tencent.imsdk.v2.V2TIMGroupListener;
@@ -518,9 +517,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
                 String uuid = v2TIMImage.getUUID(); // 图片 ID
                 WritableMap data = Arguments.createMap();
-                @SuppressLint("SdCardPath") String imagePath = "/sdcard/im/image/" + uuid;
+                String imagePath = reactContext.getFilesDir().getPath() + "/im_image/" + uuid;
                 File imageFile = new File(imagePath);
-                if (imageFile.exists()) {
+                if (!imageFile.exists()) {
                     v2TIMImage.downloadImage(imagePath, new V2TIMDownloadCallback() {
                         @Override
                         public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
@@ -532,22 +531,16 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                         @Override
                         public void onSuccess() {
-                            data.putString("uuid", uuid);
-                            data.putInt("type", v2TIMImage.getType());
-                            data.putInt("width", v2TIMImage.getWidth());
-                            data.putInt("height", v2TIMImage.getHeight());
-                            data.putString("url", "file://" + imagePath);
-                            imageElem.pushMap(data);
+
                         }
                     });
-                } else {
-                    data.putString("uuid", uuid);
-                    data.putInt("type", v2TIMImage.getType());
-                    data.putInt("width", v2TIMImage.getWidth());
-                    data.putInt("height", v2TIMImage.getHeight());
-                    data.putString("url", "file://" + imagePath);
-                    imageElem.pushMap(data);
                 }
+                data.putString("uuid", uuid);
+                data.putInt("type", v2TIMImage.getType());
+                data.putInt("width", v2TIMImage.getWidth());
+                data.putInt("height", v2TIMImage.getHeight());
+                data.putString("url", imageFile.exists() ? "file://" + imagePath : v2TIMImage.getUrl());
+                imageElem.pushMap(data);
             }
         }
 
@@ -556,9 +549,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             V2TIMSoundElem v2TIMSoundElem = msg.getSoundElem();
             String uuid = v2TIMSoundElem.getUUID();
             WritableMap data = Arguments.createMap();
-            @SuppressLint("SdCardPath") String soundPath = "/sdcard/im/sound/" + uuid;
-            File imageFile = new File(soundPath);
-            if (imageFile.exists()) {
+            String soundPath = reactContext.getFilesDir().getPath() + "/im_sound/" + uuid;
+            File soundFile = new File(soundPath);
+            if (!soundFile.exists()) {
                 v2TIMSoundElem.downloadSound(soundPath, new V2TIMDownloadCallback() {
                     @Override
                     public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
@@ -570,20 +563,15 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                     @Override
                     public void onSuccess() {
-                        data.putString("path", "file://" + soundPath);
-                        data.putString("uuid", uuid);
-                        data.putInt("dataSize", v2TIMSoundElem.getDataSize());
-                        data.putInt("duration", v2TIMSoundElem.getDuration());
-                        soundElem.pushMap(data);
+
                     }
                 });
-            } else {
-                data.putString("path", "file://" + soundPath);
-                data.putString("uuid", uuid);
-                data.putInt("dataSize", v2TIMSoundElem.getDataSize());
-                data.putInt("duration", v2TIMSoundElem.getDuration());
-                soundElem.pushMap(data);
             }
+            data.putString("path", soundFile.exists() ? "file://" + soundPath : v2TIMSoundElem.getPath());
+            data.putString("uuid", uuid);
+            data.putInt("dataSize", v2TIMSoundElem.getDataSize());
+            data.putInt("duration", v2TIMSoundElem.getDuration());
+            soundElem.pushMap(data);
         }
 
         WritableMap map = Arguments.createMap();
