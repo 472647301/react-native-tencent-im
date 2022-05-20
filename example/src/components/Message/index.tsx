@@ -1,6 +1,7 @@
 import React from 'react';
-import {View, Text, Image, StyleSheet} from 'react-native';
+import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import {V2TIMElemType, V2TIMMessage} from '@byron-react-native/tencent-im';
+import {Player} from '@react-native-community/audio-toolkit';
 
 interface PrivateMessageProps extends V2TIMMessage {}
 
@@ -73,13 +74,36 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
       );
     } else {
       return (
-        <Text style={[styles.msg_text, {color: 'red'}]}>{'图片资源为空'}</Text>
+        <View style={styles.image}>
+          <Text style={[styles.msg_text, {color: 'red'}]}>
+            {'图片资源为空'}
+          </Text>
+        </View>
       );
     }
   };
 
   const SoundElem = () => {
-    return <></>;
+    const onPlay = () => {
+      const player = new Player(props.soundElem[0].path);
+      player.play();
+    };
+    if (!props.soundElem.length) {
+      return (
+        <View style={styles.image}>
+          <Text style={[styles.msg_text, {color: 'red'}]}>
+            {'语音资源为空'}
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <TouchableOpacity style={styles.image} onPress={onPlay}>
+        <Text style={[styles.msg_text]}>
+          语音 {props.soundElem[0].duration}s 点击播放
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   const getMessageElem = () => {

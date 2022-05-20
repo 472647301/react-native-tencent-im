@@ -108,19 +108,26 @@ function PrivateChat() {
   };
 
   const onTalk = async (path: string) => {
-    const player = new Player(
-      Platform.OS === 'android' ? `file://${path}` : path,
-    );
+    const player = new Player(`file://${path}`);
     // fix AudioPlayerModule: playerId 0 not found
     if (Platform.OS === 'android') {
       player.speed = 0.0;
     }
+    player.volume = 0;
+    player.play(async err => {
+      if (err) {
+        console.log(' >> onTalk play err', err);
+        return;
+      }
+      console.log('----', player.duration);
+      onSendSound(path, Math.ceil(player.duration / 1000));
+      player.stop();
+    });
+  };
+
+  const onSendSound = async (path: string, duration: number) => {
     const [err, res] = await to(
-      ImSdk.sendSoundMessage(
-        route.params.userID,
-        path,
-        Math.ceil(player.duration / 1000),
-      ),
+      ImSdk.sendSoundMessage(route.params.userID, path, duration),
     );
     if (err) console.log(' >> sendSoundMessage', err);
     if (!res) return;
