@@ -36,6 +36,8 @@ import com.tencent.imsdk.v2.V2TIMSoundElem;
 import com.tencent.imsdk.v2.V2TIMUserFullInfo;
 import com.tencent.imsdk.v2.V2TIMValueCallback;
 
+import org.json.JSONObject;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -598,7 +600,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         map.putInt("elemType", msg.getElemType());
         map.putMap("textElem", textElem);
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_CUSTOM) {
-            map.putString("customElem", new String(msg.getCustomElem().getData()));
+            String customElem = new String(msg.getCustomElem().getData());
+            if (customElem.startsWith("{ NativeMap:")) {
+                customElem = customElem.substring(12, customElem.length() - 1);
+            }
+            map.putString("customElem", customElem);
         } else {
             map.putString("customElem", "{}");
         }
