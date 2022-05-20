@@ -477,34 +477,33 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
     NSString *customData = @"";
     if (msg.elemType == V2TIM_ELEM_TYPE_CUSTOM) {
         customData = [[NSString alloc] initWithData:msg.customElem.data encoding:NSUTF8StringEncoding];
+        if ([customData hasPrefix:@"{ NativeMap:"]) {
+            customData = [customData substringFromIndex: 12];
+            customData = [customData substringToIndex:customData.length - 1];
+        }
     }
     NSMutableArray *imageArr = [[NSMutableArray alloc] init];
     if (msg.elemType == V2TIM_ELEM_TYPE_IMAGE) {
         NSArray<V2TIMImage *> *imageList = msg.imageElem.imageList;
         for (V2TIMImage *timImage in imageList) {
-            // 设置图片下载路径 imagePath，这里可以用 uuid 作为标识，避免重复下载
-            NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imImage%@",timImage.uuid]];
-                        // 判断 imagePath 下有没有已经下载过的图片文件
+            NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_image%@",timImage.uuid]];
             if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
-                // 下载图片
                 [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
-                    // 下载进度
+                    
                 } succ:^{
-                    // 下载成功
                     [imageArr addObject:@{
-                        @"uuid": timImage.uuid ? timImage.uuid : @"",
+                        @"uuid": timImage.uuid,
                         @"type": @(timImage.type),
                         @"width": @(timImage.width),
                         @"height": @(timImage.height),
                         @"url": imagePath
                     }];
                 } fail:^(int code, NSString *msg) {
-                    // 下载失败
+                    
                 }];
             } else {
-                // 图片已存在
                 [imageArr addObject:@{
-                    @"uuid": timImage.uuid ? timImage.uuid : @"",
+                    @"uuid": timImage.uuid,
                     @"type": @(timImage.type),
                     @"width": @(timImage.width),
                     @"height": @(timImage.height),
@@ -516,28 +515,24 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
     NSMutableArray *soundArr = [[NSMutableArray alloc] init];
     if (msg.elemType == V2TIM_ELEM_TYPE_SOUND) {
         V2TIMSoundElem *soundElem = msg.soundElem;
-        NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"imSound%@",soundElem.uuid]];
-                // 判断 soundPath 下有没有已经下载过的语音文件
+        NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_sound%@",soundElem.uuid]];
         if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
-            // 下载语音
             [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
-                // 下载进度
+                
             } succ:^{
-                // 下载成功
                 [soundArr addObject:@{
-                    @"path": soundPath ? soundPath : @"",
-                    @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                    @"path": [@"file://" stringByAppendingString:soundPath],
+                    @"uuid": soundElem.uuid,
                     @"dataSize": @(soundElem.dataSize),
                     @"duration": @(soundElem.duration)
                 }];
             } fail:^(int code, NSString *msg) {
-                // 下载失败
+               
             }];
         } else {
-            // 语音已存在
             [soundArr addObject:@{
-                @"path": soundPath ? soundPath : @"",
-                @"uuid": soundElem.uuid ? soundElem.uuid : @"",
+                @"path": [@"file://" stringByAppendingString:soundPath],
+                @"uuid": soundElem.uuid,
                 @"dataSize": @(soundElem.dataSize),
                 @"duration": @(soundElem.duration)
             }];
@@ -559,8 +554,8 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         @"isPeerRead": @(msg.isPeerRead),
         @"groupAtUserList": msg.groupAtUserList ? msg.groupAtUserList : @[],
         @"elemType": @(msg.elemType),
-        @"textElem": msg.textElem ? @{@"text": msg.textElem.text} : @{},
-        @"customElem": msg.customElem ? customData : @{},
+        @"textElem": msg.elemType == V2TIM_ELEM_TYPE_TEXT ? @{@"text": msg.textElem.text} : @{},
+        @"customElem": customData,
         @"imageElem": imageArr,
         @"soundElem": soundArr
     };
