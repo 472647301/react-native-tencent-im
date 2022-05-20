@@ -536,12 +536,15 @@ public class TencentImModule extends ReactContextBaseJavaModule {
 
                         }
                     });
+                    imagePath = v2TIMImage.getUrl();
+                } else {
+                    imagePath = "file://" + imagePath;
                 }
                 data.putString("uuid", uuid);
                 data.putInt("type", v2TIMImage.getType());
                 data.putInt("width", v2TIMImage.getWidth());
                 data.putInt("height", v2TIMImage.getHeight());
-                data.putString("url", imageFile.exists() ? "file://" + imagePath : v2TIMImage.getUrl());
+                data.putString("url", imagePath);
                 imageElem.pushMap(data);
             }
         }
@@ -568,8 +571,15 @@ public class TencentImModule extends ReactContextBaseJavaModule {
 
                     }
                 });
+                if (v2TIMSoundElem.getPath().startsWith("http")) {
+                    soundPath = v2TIMSoundElem.getPath();
+                } else {
+                    soundPath = "file://" + v2TIMSoundElem.getPath();
+                }
+            } else {
+                soundPath = "file://" + soundPath;
             }
-            data.putString("path", soundFile.exists() ? "file://" + soundPath : v2TIMSoundElem.getPath());
+            data.putString("path", soundPath);
             data.putString("uuid", uuid);
             data.putInt("dataSize", v2TIMSoundElem.getDataSize());
             data.putInt("duration", v2TIMSoundElem.getDuration());
