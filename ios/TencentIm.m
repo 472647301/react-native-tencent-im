@@ -112,7 +112,7 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
         }
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
         for (V2TIMMessage *item in msgs) {
-            [msgArr addObject:[self parseMessage:item]];
+            [msgArr addObject:[self parseMessage:item isDownload:YES]];
         }
         resolve(msgArr);
     } fail:^(int code, NSString *desc) {
@@ -143,7 +143,7 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                 @"faceUrl": item.faceUrl ? item.faceUrl : @"",
                 @"unreadCount": @(item.unreadCount),
                 @"recvOpt": @(item.recvOpt),
-                @"lastMessage": [self parseMessage:item.lastMessage]
+                @"lastMessage": [self parseMessage:item.lastMessage isDownload:YES]
             }];
         }
         resolve(@{
@@ -168,7 +168,7 @@ RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
     }
     V2TIMMessage *msg = [_manager createTextMessage:text];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendC2CTextMessage" code:code userInfo:@{
             @"message":desc
@@ -211,7 +211,7 @@ RCT_EXPORT_METHOD(sendC2CCustomMessage:(NSString *)userID
     NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
     V2TIMMessage *msg = [_manager createCustomMessage:data];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendC2CCustomMessage" code:code userInfo:@{
             @"message":desc
@@ -237,7 +237,7 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)userID
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendImageMessage" code:code userInfo:@{
             @"message":desc
@@ -256,7 +256,7 @@ RCT_EXPORT_METHOD(sendSoundMessage:(NSString *)userID
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendSoundMessage" code:code userInfo:@{
             @"message":desc
@@ -282,7 +282,7 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
 //        reject([@(code) stringValue], desc, err);
 //    }];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendGroupTextMessage" code:code userInfo:@{
             @"message":desc
@@ -302,7 +302,7 @@ RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
     NSMutableArray * atUserList =[[NSMutableArray alloc] initWithObjects:userID ,nil];
     V2TIMMessage *atMsg = [_manager createTextAtMessage:text atUserList:atUserList];
     [_manager sendMessage:atMsg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:atMsg]);
+        resolve([self parseMessage:atMsg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendGroupAtTextMessage" code:code userInfo:@{
             @"message":desc
@@ -320,7 +320,7 @@ RCT_EXPORT_METHOD(sendGroupImageMessage:(NSString *)groupID
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendImageMessage" code:code userInfo:@{
             @"message":desc
@@ -339,7 +339,7 @@ RCT_EXPORT_METHOD(sendGroupSoundMessage:(NSString *)groupID
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        resolve([self parseMessage:msg]);
+        resolve([self parseMessage:msg isDownload:NO]);
     } fail:^(int code, NSString *desc) {
         NSError *err = [NSError errorWithDomain:@"im.sendGroupSoundMessage" code:code userInfo:@{
             @"message":desc
@@ -412,7 +412,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 }
 
 - (void)onRecvNewMessage:(V2TIMMessage *)msg {
-    [self sendEventWithName:@"NewMessage" body:[self parseMessage:msg]];
+    [self sendEventWithName:@"NewMessage" body:[self parseMessage:msg isDownload:YES]];
 }
 
 // 收到会话新增的回调
@@ -471,7 +471,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
   ];
 }
 
--(NSDictionary *)parseMessage:(V2TIMMessage *)msg {
+-(NSDictionary *)parseMessage:(V2TIMMessage *)msg isDownload:(BOOL)isDownload {
     NSTimeInterval interval = [msg.timestamp timeIntervalSince1970] * 1000;
     NSInteger time = interval;
     NSString *customData = @"";
@@ -488,19 +488,31 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         for (V2TIMImage *timImage in imageList) {
             NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_image%@",timImage.uuid]];
             if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
-                [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
-                    
-                } succ:^{
-                    [imageArr addObject:@{
-                        @"uuid": timImage.uuid,
-                        @"type": @(timImage.type),
-                        @"width": @(timImage.width),
-                        @"height": @(timImage.height),
-                        @"url": imagePath
+                if (isDownload == YES) {
+                    [timImage downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
+                        
+                    } succ:^{
+                        [imageArr addObject:@{
+                            @"uuid": timImage.uuid,
+                            @"type": @(timImage.type),
+                            @"width": @(timImage.width),
+                            @"height": @(timImage.height),
+                            @"url": imagePath
+                        }];
+                    } fail:^(int code, NSString *desc) {
+                        
                     }];
-                } fail:^(int code, NSString *msg) {
-                    
-                }];
+                } else {
+                    if (msg.imageElem.path) {
+                        [imageArr addObject:@{
+                            @"uuid": timImage.uuid,
+                            @"type": @(timImage.type),
+                            @"width": @(timImage.width),
+                            @"height": @(timImage.height),
+                            @"url": msg.imageElem.path
+                        }];
+                    }
+                }
             } else {
                 [imageArr addObject:@{
                     @"uuid": timImage.uuid,
@@ -517,18 +529,29 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         V2TIMSoundElem *soundElem = msg.soundElem;
         NSString *soundPath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_sound%@",soundElem.uuid]];
         if (![[NSFileManager defaultManager] fileExistsAtPath:soundPath]) {
-            [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
-                
-            } succ:^{
-                [soundArr addObject:@{
-                    @"path": [@"file://" stringByAppendingString:soundPath],
-                    @"uuid": soundElem.uuid,
-                    @"dataSize": @(soundElem.dataSize),
-                    @"duration": @(soundElem.duration)
+            if (isDownload == YES) {
+                [soundElem downloadSound:soundPath progress:^(NSInteger curSize, NSInteger totalSize) {
+                    
+                } succ:^{
+                    [soundArr addObject:@{
+                        @"path": [@"file://" stringByAppendingString:soundPath],
+                        @"uuid": soundElem.uuid,
+                        @"dataSize": @(soundElem.dataSize),
+                        @"duration": @(soundElem.duration)
+                    }];
+                } fail:^(int code, NSString *desc) {
+                    
                 }];
-            } fail:^(int code, NSString *msg) {
-               
-            }];
+            } else {
+                if (msg.soundElem.path) {
+                    [soundArr addObject:@{
+                        @"path": [@"file://" stringByAppendingString:msg.soundElem.path],
+                        @"uuid": soundElem.uuid,
+                        @"dataSize": @(soundElem.dataSize),
+                        @"duration": @(soundElem.duration)
+                    }];
+                }
+            }
         } else {
             [soundArr addObject:@{
                 @"path": [@"file://" stringByAppendingString:soundPath],
