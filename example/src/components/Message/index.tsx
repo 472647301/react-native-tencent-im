@@ -47,8 +47,8 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
   };
 
   const ImageElem = () => {
-    if (props.imageElem.length) {
-      const elem = props.imageElem[1];
+    if (props.imageThumb) {
+      const elem = props.imageThumb;
       if (!elem) {
         return (
           <View style={styles.image}>
@@ -85,10 +85,10 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
 
   const SoundElem = () => {
     const onPlay = () => {
-      const player = new Player(props.soundElem[0].path);
+      const player = new Player(props.soundElem.path);
       player.play();
     };
-    if (!props.soundElem.length) {
+    if (!props.soundElem.path) {
       return (
         <View style={styles.image}>
           <Text style={[styles.msg_text, {color: 'red'}]}>
@@ -100,7 +100,7 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
     return (
       <TouchableOpacity style={styles.image} onPress={onPlay}>
         <Text style={[styles.msg_text]}>
-          语音 {props.soundElem[0].duration}s 点击播放
+          语音 {props.soundElem.duration}s 点击播放
         </Text>
       </TouchableOpacity>
     );
