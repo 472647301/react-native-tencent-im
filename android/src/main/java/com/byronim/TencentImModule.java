@@ -536,7 +536,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                             data.putInt("type", v2TIMImage.getType());
                             data.putInt("width", v2TIMImage.getWidth());
                             data.putInt("height", v2TIMImage.getHeight());
-                            data.putString("url", imagePath);
+                            data.putString("url", "file://" + imagePath);
                             imageElem.pushMap(data);
                         }
                     });
@@ -545,7 +545,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     data.putInt("type", v2TIMImage.getType());
                     data.putInt("width", v2TIMImage.getWidth());
                     data.putInt("height", v2TIMImage.getHeight());
-                    data.putString("url", imagePath);
+                    data.putString("url", "file://" + imagePath);
                     imageElem.pushMap(data);
                 }
             }
@@ -554,7 +554,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         WritableArray soundElem = Arguments.createArray();
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_SOUND) {
             V2TIMSoundElem v2TIMSoundElem = msg.getSoundElem();
-            String uuid = v2TIMSoundElem.getUUID(); // 图片 ID
+            String uuid = v2TIMSoundElem.getUUID();
             WritableMap data = Arguments.createMap();
             @SuppressLint("SdCardPath") String soundPath = "/sdcard/im/sound/" + uuid;
             File imageFile = new File(soundPath);
@@ -570,7 +570,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                     @Override
                     public void onSuccess() {
-                        data.putString("path", soundPath);
+                        data.putString("path", "file://" + soundPath);
                         data.putString("uuid", uuid);
                         data.putInt("dataSize", v2TIMSoundElem.getDataSize());
                         data.putInt("duration", v2TIMSoundElem.getDuration());
@@ -578,7 +578,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                 });
             } else {
-                data.putString("path", soundPath);
+                data.putString("path", "file://" + soundPath);
                 data.putString("uuid", uuid);
                 data.putInt("dataSize", v2TIMSoundElem.getDataSize());
                 data.putInt("duration", v2TIMSoundElem.getDuration());
