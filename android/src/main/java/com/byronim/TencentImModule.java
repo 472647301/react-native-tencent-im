@@ -2,8 +2,6 @@
 
 package com.byronim;
 
-import android.annotation.SuppressLint;
-
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
@@ -36,8 +34,6 @@ import com.tencent.imsdk.v2.V2TIMSoundElem;
 import com.tencent.imsdk.v2.V2TIMUserFullInfo;
 import com.tencent.imsdk.v2.V2TIMValueCallback;
 
-import org.json.JSONObject;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +46,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private V2TIMMessageManager messageManager;
     private V2TIMConversationManager conversationManager;
     private V2TIMMessage lastMsg;
+    private int index = 0;
 
     public TencentImModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -173,9 +170,18 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 }
                 WritableArray msgArr = Arguments.createArray();
                 for (V2TIMMessage item : v2TIMMessages) {
-                    msgArr.pushMap(parseMessage(item));
+                    parseMessage(item, new MapCallback() {
+                        @Override
+                        public void onSuccess(WritableMap map) {
+                            msgArr.pushMap(map);
+                            index = index + 1;
+                            if (index == v2TIMMessages.size()) {
+                                promise.resolve(msgArr);
+                                index = 0;
+                            }
+                        }
+                    });
                 }
-                promise.resolve(msgArr);
             }
         });
     }
@@ -192,7 +198,10 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMConversationResult v2TIMConversationResult) {
+                WritableMap body = Arguments.createMap();
                 WritableArray msgArr = Arguments.createArray();
+                body.putInt("page", (int)v2TIMConversationResult.getNextSeq());
+                body.putBoolean("is_finished", v2TIMConversationResult.isFinished());
                 for (V2TIMConversation item : v2TIMConversationResult.getConversationList()) {
                     WritableMap data = Arguments.createMap();
                     data.putInt("type", item.getType());
@@ -204,14 +213,20 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     data.putString("faceUrl", item.getFaceUrl());
                     data.putInt("unreadCount", item.getUnreadCount());
                     data.putInt("recvOpt", item.getRecvOpt());
-                    data.putMap("lastMessage", parseMessage(item.getLastMessage()));
-                    msgArr.pushMap(data);
+                    parseMessage(item.getLastMessage(), new MapCallback() {
+                        @Override
+                        public void onSuccess(WritableMap map) {
+                            data.putMap("lastMessage", map);
+                            msgArr.pushMap(data);
+                            index = index + 1;
+                            if (index == v2TIMConversationResult.getConversationList().size()) {
+                                body.putArray("data", msgArr);
+                                index = 0;
+                                promise.resolve(body);
+                            }
+                        }
+                    });
                 }
-                WritableMap body = Arguments.createMap();
-                body.putInt("page", (int)v2TIMConversationResult.getNextSeq());
-                body.putBoolean("is_finished", v2TIMConversationResult.isFinished());
-                body.putArray("data", msgArr);
-                promise.resolve(body);
             }
         });
     }
@@ -228,7 +243,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
         });
     }
@@ -263,7 +283,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
         });
     }
@@ -280,7 +305,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
             @Override
             public void onProgress(int progress) {
@@ -301,7 +331,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
             @Override
             public void onProgress(int progress) {
@@ -322,7 +357,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
         });
     }
@@ -341,7 +381,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
             @Override
             public void onProgress(int progress) {
@@ -362,7 +407,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
             @Override
             public void onProgress(int progress) {
@@ -383,7 +433,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                promise.resolve(parseMessage(v2TIMMessage));
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
             }
             @Override
             public void onProgress(int progress) {
@@ -504,23 +559,40 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private final V2TIMAdvancedMsgListener v2TIMAdvancedMsgListener = new V2TIMAdvancedMsgListener() {
         @Override
         public void onRecvNewMessage(V2TIMMessage msg) {
-            eventEmitter.emit("NewMessage", parseMessage(msg));
+            parseMessage(msg, new MapCallback() {
+                @Override
+                public void onSuccess(WritableMap map) {
+                    eventEmitter.emit("NewMessage", map);
+                }
+            });
         }
     };
 
-    public WritableMap parseMessage(V2TIMMessage msg) {
+    public void parseMessage(V2TIMMessage msg, MapCallback cb) {
+        WritableMap map = Arguments.createMap();
+
         WritableArray groupAtUserList = Arguments.createArray();
         for (String str : msg.getGroupAtUserList()) {
             groupAtUserList.pushString(str);
         }
 
-        WritableArray imageElem = Arguments.createArray();
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
             for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
-                String uuid = v2TIMImage.getUUID(); // 图片 ID
+                String uuid = v2TIMImage.getUUID();
                 WritableMap data = Arguments.createMap();
                 String imagePath = reactContext.getFilesDir().getPath() + "/im_image/" + uuid;
                 File imageFile = new File(imagePath);
+                switch (v2TIMImage.getType()) {
+                    case 0:
+                        map.putString("imageOriginalUUID", "file://" + imagePath);
+                        break;
+                    case 1:
+                        map.putString("imageThumbUUID", "file://" + imagePath);
+                        break;
+                    case 2:
+                        map.putString("imageLargeUUID", "file://" + imagePath);
+                        break;
+                }
                 if (!imageFile.exists()) {
                     v2TIMImage.downloadImage(imagePath, new V2TIMDownloadCallback() {
                         @Override
@@ -529,27 +601,44 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                         @Override
                         public void onError(int code, String desc) {
-
+                            if (v2TIMImage.getType() == 1) {
+                                cb.onSuccess(map);
+                            }
                         }
                         @Override
                         public void onSuccess() {
-
+                            if (v2TIMImage.getType() == 1) {
+                                data.putString("uuid", uuid);
+                                data.putInt("type", v2TIMImage.getType());
+                                data.putInt("width", v2TIMImage.getWidth());
+                                data.putInt("height", v2TIMImage.getHeight());
+                                data.putString("url", "file://" + imagePath);
+                                map.putMap("imageThumb", data);
+                                cb.onSuccess(map);
+                            }
                         }
                     });
-                    imagePath = v2TIMImage.getUrl();
                 } else {
-                    imagePath = "file://" + imagePath;
+                    data.putString("uuid", uuid);
+                    data.putInt("type", v2TIMImage.getType());
+                    data.putInt("width", v2TIMImage.getWidth());
+                    data.putInt("height", v2TIMImage.getHeight());
+                    data.putString("url", "file://" + imagePath);
+                    switch (v2TIMImage.getType()) {
+                        case 0:
+                            map.putMap("imageOriginal", data);
+                            break;
+                        case 1:
+                            map.putMap("imageThumb", data);
+                            break;
+                        case 2:
+                            map.putMap("imageLarge", data);
+                            break;
+                    }
                 }
-                data.putString("uuid", uuid);
-                data.putInt("type", v2TIMImage.getType());
-                data.putInt("width", v2TIMImage.getWidth());
-                data.putInt("height", v2TIMImage.getHeight());
-                data.putString("url", imagePath);
-                imageElem.pushMap(data);
             }
         }
 
-        WritableArray soundElem = Arguments.createArray();
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_SOUND) {
             V2TIMSoundElem v2TIMSoundElem = msg.getSoundElem();
             String uuid = v2TIMSoundElem.getUUID();
@@ -564,29 +653,27 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                     @Override
                     public void onError(int code, String desc) {
-
+                        cb.onSuccess(map);
                     }
                     @Override
                     public void onSuccess() {
-
+                        data.putString("path", "file://" + soundPath);
+                        data.putString("uuid", uuid);
+                        data.putInt("dataSize", v2TIMSoundElem.getDataSize());
+                        data.putInt("duration", v2TIMSoundElem.getDuration());
+                        map.putMap("soundElem", data);
+                        cb.onSuccess(map);
                     }
                 });
-                if (v2TIMSoundElem.getPath().startsWith("http")) {
-                    soundPath = v2TIMSoundElem.getPath();
-                } else {
-                    soundPath = "file://" + v2TIMSoundElem.getPath();
-                }
             } else {
-                soundPath = "file://" + soundPath;
+                data.putString("path", "file://" + soundPath);
+                data.putString("uuid", uuid);
+                data.putInt("dataSize", v2TIMSoundElem.getDataSize());
+                data.putInt("duration", v2TIMSoundElem.getDuration());
+                map.putMap("soundElem", data);
             }
-            data.putString("path", soundPath);
-            data.putString("uuid", uuid);
-            data.putInt("dataSize", v2TIMSoundElem.getDataSize());
-            data.putInt("duration", v2TIMSoundElem.getDuration());
-            soundElem.pushMap(data);
         }
 
-        WritableMap map = Arguments.createMap();
         WritableMap textElem = Arguments.createMap();
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_TEXT) {
             textElem.putString("text", msg.getTextElem().getText());
@@ -618,8 +705,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         } else {
             map.putString("customElem", "{}");
         }
-        map.putArray("imageElem", imageElem);
-        map.putArray("soundElem", soundElem);
-        return map;
     };
+
+    public interface MapCallback {
+        void onSuccess(WritableMap map);
+    }
 }
