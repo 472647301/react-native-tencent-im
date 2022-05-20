@@ -27,7 +27,22 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
   };
 
   const CustomElem = () => {
-    return <></>;
+    try {
+      const elem = JSON.parse(props.customElem);
+      return (
+        <View style={styles.image}>
+          <Text style={[styles.msg_text]}>自定义【abc:{elem.abc}】</Text>
+        </View>
+      );
+    } catch (e) {
+      return (
+        <View style={styles.image}>
+          <Text style={[styles.msg_text]}>
+            自定义解析失败: {props.customElem}
+          </Text>
+        </View>
+      );
+    }
   };
 
   const ImageElem = () => {
@@ -35,9 +50,11 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
       const elem = props.imageElem[1];
       if (!elem) {
         return (
-          <Text style={[styles.msg_text, {color: 'red'}]}>
-            {'缩略图解析失败'}
-          </Text>
+          <View style={styles.image}>
+            <Text style={[styles.msg_text, {color: 'red'}]}>
+              {'缩略图解析失败'}
+            </Text>
+          </View>
         );
       }
       return (
@@ -45,7 +62,11 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
           <Image
             source={{uri: elem.url}}
             defaultSource={require('./images/image_error.png')}
-            style={{width: elem.width, height: elem.height}}
+            style={{
+              width: elem.width * 0.5,
+              height: elem.height * 0.5,
+              borderRadius: 8,
+            }}
             onError={err => console.log(' >> Image', err.nativeEvent.error)}
           />
         </View>
