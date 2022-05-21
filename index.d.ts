@@ -281,6 +281,17 @@ declare module "@byron-react-native/tencent-im" {
     url: string;
   }
 
+  export interface V2TIMGroupMemberInfo {
+    role: number;
+    muteUntil: number;
+    joinTime: number;
+    userID: string;
+    nickName: string;
+    friendRemark: string;
+    nameCard: string;
+    faceURL: string;
+  }
+
   export class ImSdk {
     static initSDK: (
       sdkAppID: number,
@@ -304,8 +315,21 @@ declare module "@byron-react-native/tencent-im" {
       is_finished: boolean;
       data: V2TIMConversation[];
     }>;
-    static sendC2CTextMessage: (text: string, userID: string) => Promise<V2TIMMessage>;
-    static sendC2CCustomMessage: (userID: string, params: Record<string, string>) => Promise<V2TIMMessage>;
+    static getGroupMemberList: (
+      groupID: string,
+      page: number
+    ) => Promise<{
+      page: number;
+      data: V2TIMGroupMemberInfo[];
+    }>;
+    static sendC2CTextMessage: (
+      text: string,
+      userID: string
+    ) => Promise<V2TIMMessage>;
+    static sendC2CCustomMessage: (
+      userID: string,
+      params: Record<string, string>
+    ) => Promise<V2TIMMessage>;
     static sendImageMessage: (
       userID: string,
       imagePath: string
@@ -324,7 +348,10 @@ declare module "@byron-react-native/tencent-im" {
       groupID: string,
       atUserID: string
     ) => Promise<V2TIMMessage>;
-    static sendGroupCustomMessage: (groupID: string, params: Record<string, string>) => Promise<V2TIMMessage>;
+    static sendGroupCustomMessage: (
+      groupID: string,
+      params: Record<string, string>
+    ) => Promise<V2TIMMessage>;
     static sendGroupImageMessage: (
       groupID: string,
       imagePath: string
