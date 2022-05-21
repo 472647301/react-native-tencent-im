@@ -74,11 +74,9 @@ function PrivateChat() {
   };
 
   useEffect(() => {
-    const sub_blur = navigation.addListener('blur', onBlur);
-    const sub_focus = navigation.addListener('focus', onFocus);
+    onFocus();
     return () => {
-      sub_blur();
-      sub_focus();
+      onBlur();
     };
   }, [navigation]);
 
