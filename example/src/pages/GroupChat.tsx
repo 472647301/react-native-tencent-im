@@ -179,7 +179,7 @@ function GroupChat() {
   };
 
   return (
-    <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
+    <KeyboardAvoidingView style={{flex: 1}} behavior="height">
       <ImageBackground style={{flex: 1}} source={require('./images/bg1.png')}>
         <Header title={route.params.nickName} />
         {loading ? (
