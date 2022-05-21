@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import {View, Image, Text, StyleSheet, Dimensions} from 'react-native';
 import {TouchableOpacity, ActivityIndicator} from 'react-native';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
@@ -7,7 +7,7 @@ import RefreshFlatList, {FooterStatus} from '../components/RefreshFlat';
 import {ImSdk, ImSdkEventType} from '@byron-react-native/tencent-im';
 import {V2TIMElemType} from '@byron-react-native/tencent-im';
 import {V2TIMConversation} from '@byron-react-native/tencent-im';
-import {ImageBackground, SafeAreaView} from 'react-native';
+import {ImageBackground, SafeAreaView, EmitterSubscription} from 'react-native';
 import {to} from '../utils';
 import dayjs from 'dayjs';
 
@@ -35,16 +35,40 @@ function HomeScreen() {
   const [list, setList] = useState<V2TIMConversation[]>([]);
   const route = useRoute<RouteProp<Routes, 'Home'>>();
   const navigation = useNavigation<NavigationProp<Routes>>();
+  const newConversation = useRef<EmitterSubscription>();
+  const conversationChanged = useRef<EmitterSubscription>();
 
   useEffect(() => {
+    const sub_blur = navigation.addListener('blur', onBlur);
+    const sub_focus = navigation.addListener('focus', onFocus);
+    return () => {
+      sub_blur();
+      sub_focus();
+    };
+  }, [navigation]);
+
+  const onBlur = () => {
+    newConversation.current?.remove();
+    conversationChanged.current?.remove();
+    console.log(' >> HomeScreen onBlur', route.params);
+  };
+
+  const onFocus = () => {
     fetchList(true);
-    ImSdk.addListener(ImSdkEventType.NewConversation, () => {
-      fetchList(true);
-    });
-    ImSdk.addListener(ImSdkEventType.ConversationChanged, () => {
-      fetchList(true);
-    });
-  }, []);
+    newConversation.current = ImSdk.addListener(
+      ImSdkEventType.NewConversation,
+      () => {
+        fetchList(true);
+      },
+    );
+    conversationChanged.current = ImSdk.addListener(
+      ImSdkEventType.ConversationChanged,
+      () => {
+        fetchList(true);
+      },
+    );
+    console.log(' >> HomeScreen onFocus', route.params);
+  };
 
   const fetchList = async (isFirst = false) => {
     const [err, res] = await to(

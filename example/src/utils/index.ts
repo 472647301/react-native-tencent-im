@@ -123,8 +123,31 @@ export async function login_im_sdk() {
   return Object.assign(info, data);
 }
 
+export async function index_dating_record(page: number) {
+  const [_err, res] = await to(
+    api.post<IApiRes<IApiRecord>>(
+      'http://web.xiaoquexinapp.com/index/dating/getRecord',
+      {page},
+    ),
+  );
+  if (!res || !res.data.data) {
+    return;
+  }
+  return res.data.data;
+}
+
 interface IApiRes<T> {
   data: T;
   message: string;
   statusCode: number;
 }
+
+interface IApiRecord {
+  total: number; //总条数
+  per_page: number; //每页条数
+  current_page: number; //当前页
+  last_page: number; //末页
+  data: Array<IApiRecordItem>;
+}
+
+export interface IApiRecordItem {}
