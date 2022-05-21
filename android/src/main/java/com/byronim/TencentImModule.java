@@ -22,7 +22,10 @@ import com.tencent.imsdk.v2.V2TIMConversationResult;
 import com.tencent.imsdk.v2.V2TIMDownloadCallback;
 import com.tencent.imsdk.v2.V2TIMElem;
 import com.tencent.imsdk.v2.V2TIMGroupListener;
+import com.tencent.imsdk.v2.V2TIMGroupManager;
+import com.tencent.imsdk.v2.V2TIMGroupMemberFullInfo;
 import com.tencent.imsdk.v2.V2TIMGroupMemberInfo;
+import com.tencent.imsdk.v2.V2TIMGroupMemberInfoResult;
 import com.tencent.imsdk.v2.V2TIMImageElem;
 import com.tencent.imsdk.v2.V2TIMManager;
 import com.tencent.imsdk.v2.V2TIMMessage;
@@ -47,10 +50,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private V2TIMManager manager;
     private V2TIMMessageManager messageManager;
     private V2TIMConversationManager conversationManager;
+    private V2TIMGroupManager groupManager;
     private V2TIMMessage lastMsg;
     private int indexConversation = 0;
     private int indexMessage = 0;
-    private Map<String, String> indexImage = new HashMap<>();
+    private final Map<String, String> indexImage = new HashMap<>();
 
     public TencentImModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -69,6 +73,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             manager = V2TIMManager.getInstance();
             messageManager = V2TIMManager.getMessageManager();
             conversationManager = V2TIMManager.getConversationManager();
+            groupManager = V2TIMManager.getGroupManager();
         }
         V2TIMSDKConfig config = new V2TIMSDKConfig();
         switch (logLevel) {
@@ -147,6 +152,42 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(var1 + "", new Exception(var2));
             }
+            @Override
+            public void onSuccess() {
+                promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void markC2CMessageAsRead(String userID, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        messageManager.markC2CMessageAsRead(userID, new V2TIMCallback() {
+            @Override
+            public void onError(int i, String s) {
+                promise.reject(i + "", new Exception(s));
+            }
+
+            @Override
+            public void onSuccess() {
+                promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void markGroupMessageAsRead(String groupID, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        messageManager.markGroupMessageAsRead(groupID, new V2TIMCallback() {
+            @Override
+            public void onError(int i, String s) {
+                promise.reject(i + "", new Exception(s));
+            }
+
             @Override
             public void onSuccess() {
                 promise.resolve(null);
@@ -238,6 +279,40 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void getConversationList(String groupID, int page, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        groupManager.getGroupMemberList(groupID, page, V2TIMGroupMemberFullInfo.V2TIM_GROUP_MEMBER_FILTER_ALL, new V2TIMValueCallback<V2TIMGroupMemberInfoResult>() {
+            @Override
+            public void onError(int i, String s) {
+                promise.reject(i + "", new Exception(s));
+            }
+
+            @Override
+            public void onSuccess(V2TIMGroupMemberInfoResult v2TIMGroupMemberInfoResult) {
+                WritableMap body = Arguments.createMap();
+                WritableArray msgArr = Arguments.createArray();
+                body.putInt("page", (int)v2TIMGroupMemberInfoResult.getNextSeq());
+                for (V2TIMGroupMemberFullInfo item : v2TIMGroupMemberInfoResult.getMemberInfoList()) {
+                    WritableMap data = Arguments.createMap();
+                    data.putInt("role", item.getRole());
+                    data.putInt("muteUntil", (int)item.getMuteUntil());
+                    data.putInt("joinTime", (int)item.getJoinTime());
+                    data.putString("userID", item.getUserID());
+                    data.putString("nickName", item.getNickName());
+                    data.putString("friendRemark", item.getFriendRemark());
+                    data.putString("nameCard", item.getNameCard());
+                    data.putString("faceURL", item.getFaceUrl());
+                    msgArr.pushMap(data);
+                }
+                body.putArray("data", msgArr);
+                promise.resolve(body);
+            }
+        });
+    }
+
+    @ReactMethod
     public void sendC2CTextMessage(String text, String userID, Promise promise) {
         if (manager == null) {
             return;
@@ -255,24 +330,6 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         promise.resolve(map);
                     }
                 });
-            }
-        });
-    }
-
-    @ReactMethod
-    public void markC2CMessageAsRead(String userID, Promise promise) {
-        if (manager == null) {
-            return;
-        }
-        messageManager.markC2CMessageAsRead(userID, new V2TIMCallback() {
-            @Override
-            public void onError(int i, String s) {
-                promise.reject(i + "", new Exception(s));
-            }
-
-            @Override
-            public void onSuccess() {
-                promise.resolve(null);
             }
         });
     }
@@ -402,6 +459,28 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void sendGroupCustomMessage(String groupID, ReadableMap params, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        manager.sendGroupCustomMessage(params.toString().getBytes(), groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, new V2TIMValueCallback<V2TIMMessage>() {
+            @Override
+            public void onError(int var1, String var2) {
+                promise.reject(var1 + "", new Exception(var2));
+            }
+            @Override
+            public void onSuccess(V2TIMMessage v2TIMMessage) {
+                parseMessage(v2TIMMessage, new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        promise.resolve(map);
+                    }
+                });
+            }
+        });
+    }
+
+    @ReactMethod
     public void sendGroupImageMessage(String groupID, String imagePath, Promise promise) {
         if (manager == null) {
             return;
@@ -523,11 +602,51 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private final V2TIMConversationListener v2TIMConversationListener = new V2TIMConversationListener() {
         @Override
         public void onNewConversation(List<V2TIMConversation> conversationList) {
-            eventEmitter.emit("NewConversation", null);
+            if (conversationList.size() == 0) {
+                return;
+            }
+            V2TIMConversation item = conversationList.get(0);
+            WritableMap data = Arguments.createMap();
+            data.putInt("type", item.getType());
+            data.putString("conversationID", item.getConversationID());
+            data.putString("userID", item.getUserID());
+            data.putString("groupID", item.getGroupID());
+            data.putString("groupType", item.getGroupType());
+            data.putString("showName", item.getShowName());
+            data.putString("faceUrl", item.getFaceUrl());
+            data.putInt("unreadCount", item.getUnreadCount());
+            data.putInt("recvOpt", item.getRecvOpt());
+            parseMessage(item.getLastMessage(), new MapCallback() {
+                @Override
+                public void onSuccess(WritableMap map) {
+                    data.putMap("lastMessage", map);
+                    eventEmitter.emit("NewConversation", data);
+                }
+            });
         }
         @Override
         public void onConversationChanged(List<V2TIMConversation> conversationList) {
-            eventEmitter.emit("ConversationChanged", null);
+            if (conversationList.size() == 0) {
+                return;
+            }
+            V2TIMConversation item = conversationList.get(0);
+            WritableMap data = Arguments.createMap();
+            data.putInt("type", item.getType());
+            data.putString("conversationID", item.getConversationID());
+            data.putString("userID", item.getUserID());
+            data.putString("groupID", item.getGroupID());
+            data.putString("groupType", item.getGroupType());
+            data.putString("showName", item.getShowName());
+            data.putString("faceUrl", item.getFaceUrl());
+            data.putInt("unreadCount", item.getUnreadCount());
+            data.putInt("recvOpt", item.getRecvOpt());
+            parseMessage(item.getLastMessage(), new MapCallback() {
+                @Override
+                public void onSuccess(WritableMap map) {
+                    data.putMap("lastMessage", map);
+                    eventEmitter.emit("ConversationChanged", data);
+                }
+            });
         }
     };
 
