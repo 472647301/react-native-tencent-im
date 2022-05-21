@@ -54,7 +54,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private V2TIMMessage lastMsg;
     private int indexConversation = 0;
     private int indexMessage = 0;
-    private final Map<String, String> indexImage = new HashMap<>();
+    private final Map<String, Integer> indexImage = new HashMap<>();
 
     public TencentImModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -113,7 +113,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.login(userID, userSig, new V2TIMCallback() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess() {
@@ -130,7 +130,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.logout(new V2TIMCallback() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess() {
@@ -150,7 +150,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.setSelfInfo(info, new V2TIMCallback() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess() {
@@ -166,8 +166,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         messageManager.markC2CMessageAsRead(userID, new V2TIMCallback() {
             @Override
-            public void onError(int i, String s) {
-                promise.reject(i + "", new Exception(s));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
 
             @Override
@@ -184,8 +184,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         messageManager.markGroupMessageAsRead(groupID, new V2TIMCallback() {
             @Override
-            public void onError(int i, String s) {
-                promise.reject(i + "", new Exception(s));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
 
             @Override
@@ -207,7 +207,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         messageManager.getC2CHistoryMessageList(userID, size, lastMsg, new V2TIMValueCallback<List<V2TIMMessage>>() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(final List<V2TIMMessage> v2TIMMessages) {
@@ -240,8 +240,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         indexConversation = 0;
         conversationManager.getConversationList((long) page, size, new V2TIMValueCallback<V2TIMConversationResult>() {
             @Override
-            public void onError(int code, String desc) {
-                promise.reject(code + "", new Exception(desc));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMConversationResult v2TIMConversationResult) {
@@ -285,8 +285,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         groupManager.getGroupMemberList(groupID, page, V2TIMGroupMemberFullInfo.V2TIM_GROUP_MEMBER_FILTER_ALL, new V2TIMValueCallback<V2TIMGroupMemberInfoResult>() {
             @Override
-            public void onError(int i, String s) {
-                promise.reject(i + "", new Exception(s));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
 
             @Override
@@ -320,7 +320,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.sendC2CTextMessage(text, userID, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -342,7 +342,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.sendC2CCustomMessage(params.toString().getBytes(), userID, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -363,8 +363,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         messageManager.sendMessage(messageManager.createImageMessage(imagePath), userID, null, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
             @Override
-            public void onError(int code, String desc) {
-                promise.reject(code + "", new Exception(desc));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -389,8 +389,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         messageManager.sendMessage(messageManager.createSoundMessage(soundPath, duration), userID, null, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
             @Override
-            public void onError(int code, String desc) {
-                promise.reject(code + "", new Exception(desc));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -416,7 +416,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.sendGroupTextMessage(text, groupID, V2TIMMessage.V2TIM_PRIORITY_NORMAL, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -439,8 +439,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         atList.add(userID);
         messageManager.sendMessage(messageManager.createTextAtMessage(text, atList), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
             @Override
-            public void onError(int code, String desc) {
-                promise.reject(code + "", new Exception(desc));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -466,7 +466,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.sendGroupCustomMessage(params.toString().getBytes(), groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -487,8 +487,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         messageManager.sendMessage(messageManager.createImageMessage(imagePath), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
             @Override
-            public void onError(int code, String desc) {
-                promise.reject(code + "", new Exception(desc));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -513,8 +513,8 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
         messageManager.sendMessage(messageManager.createSoundMessage(soundPath, duration), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
             @Override
-            public void onError(int code, String desc) {
-                promise.reject(code + "", new Exception(desc));
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
@@ -540,7 +540,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.joinGroup(groupID, msg, new V2TIMCallback() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess() {
@@ -557,7 +557,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         manager.quitGroup(groupID, new V2TIMCallback() {
             @Override
             public void onError(int var1, String var2) {
-                promise.reject(var1 + "", new Exception(var2));
+                promise.reject(String.valueOf(var1), var2);
             }
             @Override
             public void onSuccess() {
@@ -731,7 +731,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             map.putString("customElem", customElem);
             cb.onSuccess(map);
         } else if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
-            indexImage.put(msg.getMsgID(), "0");
+            indexImage.put(msg.getMsgID(), 0);
             for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
                 String uuid = v2TIMImage.getUUID();
                 WritableMap data = Arguments.createMap();
@@ -768,11 +768,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                         @Override
                         public void onError(int code, String desc) {
-                            String index = indexImage.get(msg.getMsgID());
+                            Integer index = indexImage.get(msg.getMsgID());
                             indexImage.remove(msg.getMsgID());
                             if (index != null) {
-                                int newIndex = Integer.parseInt(index) + 1;
-                                indexImage.put(msg.getMsgID(), String.valueOf(newIndex));
+                                int newIndex = index + 1;
+                                indexImage.put(msg.getMsgID(), newIndex);
                                 if (newIndex == msg.getImageElem().getImageList().size()) {
                                     indexImage.remove(msg.getMsgID());
                                     cb.onSuccess(map);
@@ -781,11 +781,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                         @Override
                         public void onSuccess() {
-                            String index = indexImage.get(msg.getMsgID());
+                            Integer index = indexImage.get(msg.getMsgID());
                             indexImage.remove(msg.getMsgID());
                             if (index != null) {
-                                int newIndex = Integer.parseInt(index) + 1;
-                                indexImage.put(msg.getMsgID(), String.valueOf(newIndex));
+                                int newIndex = index + 1;
+                                indexImage.put(msg.getMsgID(), newIndex);
                                 if (newIndex == msg.getImageElem().getImageList().size()) {
                                     indexImage.remove(msg.getMsgID());
                                     cb.onSuccess(map);
@@ -794,11 +794,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                     });
                 } else {
-                    String index = indexImage.get(msg.getMsgID());
+                    Integer index = indexImage.get(msg.getMsgID());
                     indexImage.remove(msg.getMsgID());
                     if (index != null) {
-                        int newIndex = Integer.parseInt(index) + 1;
-                        indexImage.put(msg.getMsgID(), String.valueOf(newIndex));
+                        int newIndex = index + 1;
+                        indexImage.put(msg.getMsgID(), newIndex);
                         if (newIndex == msg.getImageElem().getImageList().size()) {
                             indexImage.remove(msg.getMsgID());
                             cb.onSuccess(map);
