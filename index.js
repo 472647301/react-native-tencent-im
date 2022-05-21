@@ -75,7 +75,7 @@ export class ImSdk {
     return TencentIm.markC2CMessageAsRead(userID);
   }
   static async markGroupMessageAsRead(groupID) {
-    return TencentIm.markC2CMessageAsRead(groupID);
+    return TencentIm.markGroupMessageAsRead(groupID);
   }
   static async getC2CHistoryMessageList(userID, size, isFirst = false) {
     return TencentIm.getC2CHistoryMessageList(userID, size, isFirst);
