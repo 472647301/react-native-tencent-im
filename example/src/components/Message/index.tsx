@@ -88,7 +88,7 @@ export const PrivateMessage = (props: PrivateMessageProps) => {
       const player = new Player(props.soundElem.path);
       player.play();
     };
-    if (!props.soundElem.path) {
+    if (!props.soundElem || !props.soundElem.path) {
       return (
         <View style={styles.image}>
           <Text style={[styles.msg_text, {color: 'red'}]}>
