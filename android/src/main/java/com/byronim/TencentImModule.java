@@ -39,9 +39,7 @@ import com.tencent.imsdk.v2.V2TIMValueCallback;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class TencentImModule extends ReactContextBaseJavaModule {
 
@@ -54,7 +52,6 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private V2TIMMessage lastMsg;
     private int indexConversation = 0;
     private int indexMessage = 0;
-    private final Map<String, Integer> indexImage = new HashMap<>();
 
     public TencentImModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -616,13 +613,23 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             data.putString("faceUrl", item.getFaceUrl());
             data.putInt("unreadCount", item.getUnreadCount());
             data.putInt("recvOpt", item.getRecvOpt());
-            parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "NewConversation", new MapCallback() {
-                @Override
-                public void onSuccess(WritableMap map) {
-                    data.putMap("lastMessage", map);
-                    eventEmitter.emit("NewConversation", data);
-                }
-            });
+            if (item.getType() == V2TIMConversation.V2TIM_C2C) {
+                parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "NewConversation", new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        data.putMap("lastMessage", map);
+                        eventEmitter.emit("NewConversation", data);
+                    }
+                });
+            } else {
+                parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "NewConversationGroup", new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        data.putMap("lastMessage", map);
+                        eventEmitter.emit("NewConversationGroup", data);
+                    }
+                });
+            }
         }
         @Override
         public void onConversationChanged(List<V2TIMConversation> conversationList) {
@@ -640,13 +647,23 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             data.putString("faceUrl", item.getFaceUrl());
             data.putInt("unreadCount", item.getUnreadCount());
             data.putInt("recvOpt", item.getRecvOpt());
-            parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "ConversationChanged", new MapCallback() {
-                @Override
-                public void onSuccess(WritableMap map) {
-                    data.putMap("lastMessage", map);
-                    eventEmitter.emit("ConversationChanged", data);
-                }
-            });
+            if (item.getType() == V2TIMConversation.V2TIM_C2C) {
+                parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "ConversationChanged", new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        data.putMap("lastMessage", map);
+                        eventEmitter.emit("ConversationChanged", data);
+                    }
+                });
+            } else  {
+                parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "ConversationChangedGroup", new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        data.putMap("lastMessage", map);
+                        eventEmitter.emit("ConversationChangedGroup", data);
+                    }
+                });
+            }
         }
     };
 
@@ -684,12 +701,21 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private final V2TIMAdvancedMsgListener v2TIMAdvancedMsgListener = new V2TIMAdvancedMsgListener() {
         @Override
         public void onRecvNewMessage(V2TIMMessage msg) {
-            parseMessage(msg, msg.getMsgID() + "NewMessage", new MapCallback() {
-                @Override
-                public void onSuccess(WritableMap map) {
-                    eventEmitter.emit("NewMessage", map);
-                }
-            });
+            if (msg.getGroupID().isEmpty()) {
+                parseMessage(msg, msg.getMsgID() + "NewMessage", new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        eventEmitter.emit("NewMessage", map);
+                    }
+                });
+            } else  {
+                parseMessage(msg, msg.getMsgID() + "NewMessageGroup", new MapCallback() {
+                    @Override
+                    public void onSuccess(WritableMap map) {
+                        eventEmitter.emit("NewMessageGroup", map);
+                    }
+                });
+            }
         }
     };
 
@@ -731,8 +757,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             map.putString("customElem", customElem);
             cb.onSuccess(map);
         } else if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
-            indexImage.put(key, 0);
+            int index = 0;
             for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
+                index = index + 1;
                 String uuid = v2TIMImage.getUUID();
                 WritableMap data = Arguments.createMap();
                 String imagePath = reactContext.getFilesDir().getPath() + "/im_image/" + uuid;
@@ -743,13 +770,10 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 data.putInt("height", v2TIMImage.getHeight());
                 data.putString("url", "file://" + imagePath);
                 switch (v2TIMImage.getType()) {
-                    case 0:
+                    case V2TIMImageElem.V2TIM_IMAGE_TYPE_ORIGIN:
                         map.putMap("imageOriginal", data);
                         break;
-                    case 1:
-                        map.putMap("imageThumb", data);
-                        break;
-                    case 2:
+                    case V2TIMImageElem.V2TIM_IMAGE_TYPE_LARGE:
                         map.putMap("imageLarge", data);
                         break;
                 }
@@ -768,41 +792,22 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                         @Override
                         public void onError(int code, String desc) {
-                            Integer index = indexImage.get(key);
-                            indexImage.remove(key);
-                            if (index != null) {
-                                int newIndex = index + 1;
-                                indexImage.put(key, newIndex);
-                                if (newIndex == msg.getImageElem().getImageList().size()) {
-                                    indexImage.remove(key);
-                                    cb.onSuccess(map);
-                                }
+                            if (v2TIMImage.getType() == V2TIMImageElem.V2TIM_IMAGE_TYPE_THUMB) {
+                                cb.onSuccess(map);
                             }
                         }
                         @Override
                         public void onSuccess() {
-                            Integer index = indexImage.get(key);
-                            indexImage.remove(key);
-                            if (index != null) {
-                                int newIndex = index + 1;
-                                indexImage.put(key, newIndex);
-                                if (newIndex == msg.getImageElem().getImageList().size()) {
-                                    indexImage.remove(key);
-                                    cb.onSuccess(map);
-                                }
+                            if (v2TIMImage.getType() == V2TIMImageElem.V2TIM_IMAGE_TYPE_THUMB) {
+                                map.putMap("imageThumb", data);
+                                cb.onSuccess(map);
                             }
                         }
                     });
                 } else {
-                    Integer index = indexImage.get(key);
-                    indexImage.remove(key);
-                    if (index != null) {
-                        int newIndex = index + 1;
-                        indexImage.put(key, newIndex);
-                        if (newIndex == msg.getImageElem().getImageList().size()) {
-                            indexImage.remove(key);
-                            cb.onSuccess(map);
-                        }
+                    if (index == msg.getImageElem().getImageList().size()) {
+                        map.putMap("imageThumb", data);
+                        cb.onSuccess(map);
                     }
                 }
             }
