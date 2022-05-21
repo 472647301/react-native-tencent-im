@@ -241,13 +241,25 @@ declare module "@byron-react-native/tencent-im" {
      */
     "NewMessage" = "NewMessage",
     /**
+     * 新消息通知
+     */
+     "NewMessageGroup" = "NewMessageGroup",
+    /**
      * 收到会话新增的回调
      */
     "NewConversation" = "NewConversation",
     /**
+     * 收到会话新增的回调
+     */
+     "NewConversationGroup" = "NewConversationGroup",
+    /**
      * 收到会话更新的回调
      */
     "ConversationChanged" = "ConversationChanged",
+    /**
+     * 收到会话更新的回调
+     */
+     "ConversationChangedGroup" = "ConversationChangedGroup",
     /**
      * 有新成员加入群（该群所有的成员都能收到）
      */
