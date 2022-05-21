@@ -101,6 +101,38 @@ RCT_EXPORT_METHOD(setSelfInfo:(NSDictionary *)params
     }];
 }
 
+RCT_EXPORT_METHOD(markC2CMessageAsRead:(NSString *)userID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager markC2CMessageAsRead:userID succ:^{
+        resolve(nil);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.markC2CMessageAsRead" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
+RCT_EXPORT_METHOD(markGroupMessageAsRead:(NSString *)groupID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager markGroupMessageAsRead:groupID succ:^{
+        resolve(nil);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.markGroupMessageAsRead" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
 RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                   size:(int)size
                   isFirst:(BOOL)isFirst
@@ -205,22 +237,6 @@ RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
 //        }];
 //        reject([@(code) stringValue], desc, err);
 //    }];
-}
-
-RCT_EXPORT_METHOD(markC2CMessageAsRead:(NSString *)userID
-                  resolver:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject) {
-    if (!(self->_manager)) {
-        return;
-    }
-    [_manager markC2CMessageAsRead:userID succ:^{
-        resolve(nil);
-    } fail:^(int code, NSString *desc) {
-        NSError *err = [NSError errorWithDomain:@"im.sendText" code:code userInfo:@{
-            @"message":desc
-        }];
-        reject([@(code) stringValue], desc, err);
-    }];
 }
 
 RCT_EXPORT_METHOD(sendC2CCustomMessage:(NSString *)userID
