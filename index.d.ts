@@ -305,7 +305,7 @@ declare module "@byron-react-native/tencent-im" {
       data: V2TIMConversation[];
     }>;
     static sendC2CTextMessage: (text: string, userID: string) => Promise<V2TIMMessage>;
-    static sendC2CCustomMessage: (userID: string, params: any) => Promise<V2TIMMessage>;
+    static sendC2CCustomMessage: (userID: string, params: Record<string, string>) => Promise<V2TIMMessage>;
     static sendImageMessage: (
       userID: string,
       imagePath: string
@@ -324,6 +324,7 @@ declare module "@byron-react-native/tencent-im" {
       groupID: string,
       atUserID: string
     ) => Promise<V2TIMMessage>;
+    static sendGroupCustomMessage: (groupID: string, params: Record<string, string>) => Promise<V2TIMMessage>;
     static sendGroupImageMessage: (
       groupID: string,
       imagePath: string
