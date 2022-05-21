@@ -211,6 +211,36 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
     }];
 }
 
+RCT_EXPORT_METHOD(getGroupMemberList:(NSString *)groupID
+                  page:(int)page
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager getGroupMemberList:groupID filter:V2TIM_GROUP_MEMBER_FILTER_ALL nextSeq:page succ:^(uint64_t nextSeq, NSArray<V2TIMGroupMemberFullInfo *> *memberList) {
+        NSMutableArray *msgArr = [[NSMutableArray alloc] init];
+        for (V2TIMGroupMemberFullInfo *item in memberList) {
+            [msgArr addObject:@{
+                @"role": @(item.role),
+                @"muteUntil": @(item.muteUntil),
+                @"joinTime": @(item.joinTime),
+                @"userID": item.userID ? item.userID : @"",
+                @"nickName": item.nickName ? item.nickName : @"",
+                @"friendRemark": item.friendRemark ? item.friendRemark : @"",
+                @"nameCard": item.nameCard ? item.nameCard : @"",
+                @"faceURL": item.faceURL ? item.faceURL : @""
+            }];
+        }
+        resolve(@{@"page": @(nextSeq), @"data": msgArr});
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.sendC2CTextMessage" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
 RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
                   userID:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
