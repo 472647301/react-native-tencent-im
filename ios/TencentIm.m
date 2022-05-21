@@ -343,6 +343,27 @@ RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
     }];
 }
 
+RCT_EXPORT_METHOD(sendGroupCustomMessage:(NSString *)groupID
+                  params:(NSDictionary *)params
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
+    V2TIMMessage *msg = [_manager createCustomMessage:data];
+    [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
+        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+            resolve(map);
+        }];
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.sendGroupCustomMessage" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
 RCT_EXPORT_METHOD(sendGroupImageMessage:(NSString *)groupID
                   imagePath:(NSString *)imagePath
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -455,12 +476,46 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 
 // 收到会话新增的回调
 - (void)onNewConversation:(NSArray<V2TIMConversation*> *) conversationList {
-    [self sendEventWithName:@"NewConversation" body:nil];
+    if ([conversationList count] == 0) {
+        return;
+    }
+    V2TIMConversation *item = conversationList[0];
+    [self parseMessage:item.lastMessage isDownload:YES succ:^(NSDictionary *map) {
+        [self sendEventWithName:@"NewConversation" body:@{
+            @"type": @(item.type),
+            @"conversationID": item.conversationID ? item.conversationID : @"",
+            @"userID": item.userID ? item.userID : @"",
+            @"groupID": item.groupID ? item.groupID : @"",
+            @"groupType": item.groupType ? item.groupType : @"",
+            @"showName": item.showName ? item.showName : @"",
+            @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+            @"unreadCount": @(item.unreadCount),
+            @"recvOpt": @(item.recvOpt),
+            @"lastMessage": map
+        }];
+    }];
 }
 
 // 收到会话更新的回调
 - (void)onConversationChanged:(NSArray<V2TIMConversation*> *) conversationList {
-    [self sendEventWithName:@"ConversationChanged" body:nil];
+    if ([conversationList count] == 0) {
+        return;
+    }
+    V2TIMConversation *item = conversationList[0];
+    [self parseMessage:item.lastMessage isDownload:YES succ:^(NSDictionary *map) {
+        [self sendEventWithName:@"ConversationChanged" body:@{
+            @"type": @(item.type),
+            @"conversationID": item.conversationID ? item.conversationID : @"",
+            @"userID": item.userID ? item.userID : @"",
+            @"groupID": item.groupID ? item.groupID : @"",
+            @"groupType": item.groupType ? item.groupType : @"",
+            @"showName": item.showName ? item.showName : @"",
+            @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+            @"unreadCount": @(item.unreadCount),
+            @"recvOpt": @(item.recvOpt),
+            @"lastMessage": map
+        }];
+    }];
 }
 
 /////////////////////////////////////////////////////////////////////////////////
