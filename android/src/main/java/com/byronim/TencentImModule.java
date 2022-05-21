@@ -413,7 +413,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         if (manager == null) {
             return;
         }
-        manager.sendGroupTextMessage(text, groupID, V2TIMMessage.V2TIM_PRIORITY_NORMAL, new V2TIMValueCallback<V2TIMMessage>() {
+        manager.sendGroupTextMessage(text, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
