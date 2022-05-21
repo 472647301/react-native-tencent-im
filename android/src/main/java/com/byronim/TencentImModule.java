@@ -216,7 +216,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 }
                 WritableArray msgArr = Arguments.createArray();
                 for (V2TIMMessage item : v2TIMMessages) {
-                    parseMessage(item, item.getMsgID() + indexMessage, new MapCallback() {
+                    parseMessage(item, item.getMsgID() + "C2CHistoryMessageList", new MapCallback() {
                         @Override
                         public void onSuccess(WritableMap map) {
                             msgArr.pushMap(map);
@@ -260,7 +260,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     data.putString("faceUrl", item.getFaceUrl());
                     data.putInt("unreadCount", item.getUnreadCount());
                     data.putInt("recvOpt", item.getRecvOpt());
-                    parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + indexConversation, new MapCallback() {
+                    parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "ConversationList", new MapCallback() {
                         @Override
                         public void onSuccess(WritableMap map) {
                             data.putMap("lastMessage", map);
