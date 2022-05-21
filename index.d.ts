@@ -289,6 +289,8 @@ declare module "@byron-react-native/tencent-im" {
     static login: (userID: string, userSig: string) => Promise<void>;
     static logout: () => Promise<void>;
     static setSelfInfo: (nickName: string, faceURL: string) => Promise<void>;
+    static markC2CMessageAsRead: (userID: string) => Promise<void>;
+    static markGroupMessageAsRead: (userID: string) => Promise<void>;
     static getC2CHistoryMessageList: (
       userID: string,
       size: number,
@@ -303,7 +305,6 @@ declare module "@byron-react-native/tencent-im" {
       data: V2TIMConversation[];
     }>;
     static sendC2CTextMessage: (text: string, userID: string) => Promise<V2TIMMessage>;
-    static markC2CMessageAsRead: (userID: string) => Promise<void>;
     static sendC2CCustomMessage: (userID: string, params: any) => Promise<V2TIMMessage>;
     static sendImageMessage: (
       userID: string,
