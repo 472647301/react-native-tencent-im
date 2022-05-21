@@ -49,8 +49,8 @@ function GroupChat() {
   };
 
   const onFocus = () => {
-    // setLoading(true);
-    // fetchList(0).then(() => {});
+    setLoading(true);
+    fetchList(0).then(() => {});
     ImSdk.joinGroup(route.params.groupID, 'Hello');
     newMessage.current = ImSdk.addListener(
       ImSdkEventType.NewMessage,
@@ -142,18 +142,28 @@ function GroupChat() {
   };
 
   const onSend = async (val: string) => {
-    // if (val === '123') {
-    //   const [err, res] = await to(
-    //     ImSdk.sendC2CCustomMessage(route.params.userID, {
-    //       abc: '123',
-    //     }),
-    //   );
-    //   if (err) console.log(' >> sendC2CTextMessage', err);
-    //   Keyboard.dismiss();
-    //   if (!res) return;
-    //   setList([res].concat(listRef.current));
-    //   return;
-    // }
+    if (val === '123') {
+      const [err, res] = await to(
+        ImSdk.sendGroupCustomMessage(route.params.groupID, {
+          abc: '123',
+        }),
+      );
+      if (err) console.log(' >> sendC2CTextMessage', err);
+      Keyboard.dismiss();
+      if (!res) return;
+      // setList([res].concat(listRef.current));
+      return;
+    }
+    if (val === '321') {
+      // 45761328
+      const [err, res] = await to(
+        ImSdk.sendGroupAtTextMessage(val, route.params.groupID, '45761328'),
+      );
+      if (err) console.log(' >> sendC2CTextMessage', err);
+      Keyboard.dismiss();
+      if (!res) return;
+      return;
+    }
     const [err, res] = await to(
       ImSdk.sendGroupTextMessage(val, route.params.groupID),
     );
@@ -164,8 +174,8 @@ function GroupChat() {
   };
 
   const onFooter = async () => {
-    // const res = await fetchList();
-    // if (!res) return;
+    const res = await fetchList();
+    if (!res) return;
   };
 
   return (
