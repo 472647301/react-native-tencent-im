@@ -7,7 +7,6 @@
     V2TIMMessage *_lastMsg;
     long indexConversation;
     long indexMessage;
-    NSMutableDictionary *indexImage;
 }
 
 RCT_EXPORT_MODULE()
@@ -37,7 +36,6 @@ RCT_EXPORT_METHOD(initSDK:(int)sdkAppID
     if (!(self->_manager)) {
         self->indexConversation = 0;
         self->indexMessage = 0;
-        self->indexImage = [NSMutableDictionary dictionary];
         self->_manager = [V2TIMManager sharedInstance];
     }
     [_manager initSDK:sdkAppID config:config listener:self];
@@ -515,9 +513,15 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 }
 
 - (void)onRecvNewMessage:(V2TIMMessage *)msg {
-    [self parseMessage:msg isDownload:YES key:[msg.msgID stringByAppendingString: @"NewMessage"] succ:^(NSDictionary *map) {
-        [self sendEventWithName:@"NewMessage" body:map];
-    }];
+    if (msg.groupID) {
+        [self parseMessage:msg isDownload:YES key:[msg.msgID stringByAppendingString: @"NewMessageGroup"] succ:^(NSDictionary *map) {
+            [self sendEventWithName:@"NewMessageGroup" body:map];
+        }];
+    } else {
+        [self parseMessage:msg isDownload:YES key:[msg.msgID stringByAppendingString: @"NewMessage"] succ:^(NSDictionary *map) {
+            [self sendEventWithName:@"NewMessage" body:map];
+        }];
+    }
 }
 
 // 收到会话新增的回调
@@ -526,20 +530,37 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         return;
     }
     V2TIMConversation *item = conversationList[0];
-    [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"NewConversation"] succ:^(NSDictionary *map) {
-        [self sendEventWithName:@"NewConversation" body:@{
-            @"type": @(item.type),
-            @"conversationID": item.conversationID ? item.conversationID : @"",
-            @"userID": item.userID ? item.userID : @"",
-            @"groupID": item.groupID ? item.groupID : @"",
-            @"groupType": item.groupType ? item.groupType : @"",
-            @"showName": item.showName ? item.showName : @"",
-            @"faceUrl": item.faceUrl ? item.faceUrl : @"",
-            @"unreadCount": @(item.unreadCount),
-            @"recvOpt": @(item.recvOpt),
-            @"lastMessage": map
+    if (item.type == V2TIM_C2C) {
+        [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"NewConversation"] succ:^(NSDictionary *map) {
+            [self sendEventWithName:@"NewConversation" body:@{
+                @"type": @(item.type),
+                @"conversationID": item.conversationID ? item.conversationID : @"",
+                @"userID": item.userID ? item.userID : @"",
+                @"groupID": item.groupID ? item.groupID : @"",
+                @"groupType": item.groupType ? item.groupType : @"",
+                @"showName": item.showName ? item.showName : @"",
+                @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+                @"unreadCount": @(item.unreadCount),
+                @"recvOpt": @(item.recvOpt),
+                @"lastMessage": map
+            }];
         }];
-    }];
+    } else {
+        [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"NewConversationGroup"] succ:^(NSDictionary *map) {
+            [self sendEventWithName:@"NewConversationGroup" body:@{
+                @"type": @(item.type),
+                @"conversationID": item.conversationID ? item.conversationID : @"",
+                @"userID": item.userID ? item.userID : @"",
+                @"groupID": item.groupID ? item.groupID : @"",
+                @"groupType": item.groupType ? item.groupType : @"",
+                @"showName": item.showName ? item.showName : @"",
+                @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+                @"unreadCount": @(item.unreadCount),
+                @"recvOpt": @(item.recvOpt),
+                @"lastMessage": map
+            }];
+        }];
+    }
 }
 
 // 收到会话更新的回调
@@ -548,20 +569,37 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         return;
     }
     V2TIMConversation *item = conversationList[0];
-    [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"ConversationChanged"] succ:^(NSDictionary *map) {
-        [self sendEventWithName:@"ConversationChanged" body:@{
-            @"type": @(item.type),
-            @"conversationID": item.conversationID ? item.conversationID : @"",
-            @"userID": item.userID ? item.userID : @"",
-            @"groupID": item.groupID ? item.groupID : @"",
-            @"groupType": item.groupType ? item.groupType : @"",
-            @"showName": item.showName ? item.showName : @"",
-            @"faceUrl": item.faceUrl ? item.faceUrl : @"",
-            @"unreadCount": @(item.unreadCount),
-            @"recvOpt": @(item.recvOpt),
-            @"lastMessage": map
+    if (item.type == V2TIM_C2C) {
+        [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"ConversationChanged"] succ:^(NSDictionary *map) {
+            [self sendEventWithName:@"ConversationChanged" body:@{
+                @"type": @(item.type),
+                @"conversationID": item.conversationID ? item.conversationID : @"",
+                @"userID": item.userID ? item.userID : @"",
+                @"groupID": item.groupID ? item.groupID : @"",
+                @"groupType": item.groupType ? item.groupType : @"",
+                @"showName": item.showName ? item.showName : @"",
+                @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+                @"unreadCount": @(item.unreadCount),
+                @"recvOpt": @(item.recvOpt),
+                @"lastMessage": map
+            }];
         }];
-    }];
+    } else {
+        [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"ConversationChangedGroup"] succ:^(NSDictionary *map) {
+            [self sendEventWithName:@"ConversationChangedGroup" body:@{
+                @"type": @(item.type),
+                @"conversationID": item.conversationID ? item.conversationID : @"",
+                @"userID": item.userID ? item.userID : @"",
+                @"groupID": item.groupID ? item.groupID : @"",
+                @"groupType": item.groupType ? item.groupType : @"",
+                @"showName": item.showName ? item.showName : @"",
+                @"faceUrl": item.faceUrl ? item.faceUrl : @"",
+                @"unreadCount": @(item.unreadCount),
+                @"recvOpt": @(item.recvOpt),
+                @"lastMessage": map
+            }];
+        }];
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -603,8 +641,11 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
       @"UserSigExpired",
       @"SelfInfoUpdated",
       @"NewMessage",
+      @"NewMessageGroup",
       @"NewConversation",
+      @"NewConversationGroup",
       @"ConversationChanged",
+      @"ConversationChangedGroup",
       @"MemberEnter",
       @"MemberLeave"
   ];
@@ -643,7 +684,6 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         NSDictionary *result = [dict copy];
         succ(result);
     } else if (msg.elemType == V2TIM_ELEM_TYPE_IMAGE) {
-        [indexImage setValue:@"0" forKey:key];
         for (V2TIMImage *imageElem in msg.imageElem.imageList) {
             NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_image%@",imageElem.uuid]];
             if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
@@ -659,52 +699,30 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                             [dict setValue:[self parseMessageImage:imageElem imagePath:msg.imageElem.path] forKey:@"imageLarge"];
                             break;
                     }
-                    NSString *oldVal = [indexImage objectForKey:key];
-                    long index = [oldVal longLongValue];
-                    [indexImage removeObjectForKey:key];
-                    long newIndex = index + 1;
-                    [indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
-                    if (newIndex == [msg.imageElem.imageList count]) {
-                        [indexImage removeObjectForKey:key];
-                        NSDictionary *result = [dict copy];
-                        succ(result);
-                    }
+                    NSDictionary *result = [dict copy];
+                    succ(result);
                 } else {
                     [imageElem downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
                         
                     } succ:^{
-                        switch (imageElem.type) {
-                            case V2TIM_IMAGE_TYPE_ORIGIN:
-                                [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageOriginal"];
-                                break;
-                            case V2TIM_IMAGE_TYPE_THUMB:
-                                [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageThumb"];
-                                break;
-                            default:
-                                [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
-                                break;
-                        }
-                        NSString *oldVal = [self->indexImage objectForKey:key];
-                        long index = [oldVal longLongValue];
-                        [self->indexImage removeObjectForKey:key];
-                        long newIndex = index + 1;
-                        [self->indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
-                        if (newIndex == [msg.imageElem.imageList count]) {
-                            [self->indexImage removeObjectForKey:key];
+                        if (imageElem.type == V2TIM_IMAGE_TYPE_THUMB) {
+                            switch (imageElem.type) {
+                                case V2TIM_IMAGE_TYPE_ORIGIN:
+                                    [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageOriginal"];
+                                    break;
+                                case V2TIM_IMAGE_TYPE_THUMB:
+                                    [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageThumb"];
+                                    break;
+                                default:
+                                    [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
+                                    break;
+                            }
                             NSDictionary *result = [dict copy];
                             succ(result);
                         }
                     } fail:^(int code, NSString *desc) {
-                        NSString *oldVal = [self->indexImage objectForKey:key];
-                        long index = [oldVal longLongValue];
-                        [self->indexImage removeObjectForKey:key];
-                        long newIndex = index + 1;
-                        [self->indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
-                        if (newIndex == [msg.imageElem.imageList count]) {
-                            [self->indexImage removeObjectForKey:key];
-                            NSDictionary *result = [dict copy];
-                            succ(result);
-                        }
+                        NSDictionary *result = [dict copy];
+                        succ(result);
                     }];
                 }
             } else {
@@ -719,16 +737,8 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                         [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
                         break;
                 }
-                NSString *oldVal = [indexImage objectForKey:key];
-                long index = [oldVal longLongValue];
-                [indexImage removeObjectForKey:key];
-                long newIndex = index + 1;
-                [indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
-                if (newIndex == [msg.imageElem.imageList count]) {
-                    [indexImage removeObjectForKey:key];
-                    NSDictionary *result = [dict copy];
-                    succ(result);
-                }
+                NSDictionary *result = [dict copy];
+                succ(result);
             }
         }
     } else if (msg.elemType == V2TIM_ELEM_TYPE_SOUND) {
