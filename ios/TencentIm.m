@@ -684,7 +684,9 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         NSDictionary *result = [dict copy];
         succ(result);
     } else if (msg.elemType == V2TIM_ELEM_TYPE_IMAGE) {
+        int index = 0;
         for (V2TIMImage *imageElem in msg.imageElem.imageList) {
+            index = index + 1;
             NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_image%@",imageElem.uuid]];
             if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
                 if (isDownload == NO && msg.imageElem.path) {
@@ -695,28 +697,31 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                         case V2TIM_IMAGE_TYPE_THUMB:
                             [dict setValue:[self parseMessageImage:imageElem imagePath:msg.imageElem.path] forKey:@"imageThumb"];
                             break;
-                        default:
+                        case V2TIM_IMAGE_TYPE_LARGE:
                             [dict setValue:[self parseMessageImage:imageElem imagePath:msg.imageElem.path] forKey:@"imageLarge"];
                             break;
                     }
-                    NSDictionary *result = [dict copy];
-                    succ(result);
+                    if (index == [msg.imageElem.imageList count]) {
+                        NSDictionary *result = [dict copy];
+                        succ(result);
+                    }
                 } else {
+                    switch (imageElem.type) {
+                        case V2TIM_IMAGE_TYPE_ORIGIN:
+                            [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageOriginal"];
+                            break;
+                        case V2TIM_IMAGE_TYPE_THUMB:
+                            
+                            break;
+                        case V2TIM_IMAGE_TYPE_LARGE:
+                            [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
+                            break;
+                    }
                     [imageElem downloadImage:imagePath progress:^(NSInteger curSize, NSInteger totalSize) {
                         
                     } succ:^{
                         if (imageElem.type == V2TIM_IMAGE_TYPE_THUMB) {
-                            switch (imageElem.type) {
-                                case V2TIM_IMAGE_TYPE_ORIGIN:
-                                    [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageOriginal"];
-                                    break;
-                                case V2TIM_IMAGE_TYPE_THUMB:
-                                    [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageThumb"];
-                                    break;
-                                default:
-                                    [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
-                                    break;
-                            }
+                            [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageThumb"];
                             NSDictionary *result = [dict copy];
                             succ(result);
                         }
@@ -733,12 +738,14 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                     case V2TIM_IMAGE_TYPE_THUMB:
                         [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageThumb"];
                         break;
-                    default:
+                    case V2TIM_IMAGE_TYPE_LARGE:
                         [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
                         break;
                 }
-                NSDictionary *result = [dict copy];
-                succ(result);
+                if (index == [msg.imageElem.imageList count]) {
+                    NSDictionary *result = [dict copy];
+                    succ(result);
+                }
             }
         }
     } else if (msg.elemType == V2TIM_ELEM_TYPE_SOUND) {
