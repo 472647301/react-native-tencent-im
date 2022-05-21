@@ -71,6 +71,12 @@ export class ImSdk {
   static async setSelfInfo(nickName, faceURL) {
     return TencentIm.setSelfInfo({ nickName, faceURL });
   }
+  static async markC2CMessageAsRead(userID) {
+    return TencentIm.markC2CMessageAsRead(userID);
+  }
+  static async markGroupMessageAsRead(groupID) {
+    return TencentIm.markC2CMessageAsRead(groupID);
+  }
   static async getC2CHistoryMessageList(userID, size, isFirst = false) {
     return TencentIm.getC2CHistoryMessageList(userID, size, isFirst);
   }
@@ -79,9 +85,6 @@ export class ImSdk {
   }
   static async sendC2CTextMessage(text, userID) {
     return TencentIm.sendC2CTextMessage(text, userID);
-  }
-  static async markC2CMessageAsRead(userID) {
-    return TencentIm.markC2CMessageAsRead(userID);
   }
   static async sendC2CCustomMessage(userID, params) {
     return TencentIm.sendC2CCustomMessage(userID, params);
