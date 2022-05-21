@@ -52,8 +52,11 @@ export const ImSdkEventType = {
   UserSigExpired: "UserSigExpired",
   SelfInfoUpdated: "SelfInfoUpdated",
   NewMessage: "NewMessage",
+  NewMessageGroup: "NewMessageGroup",
   NewConversation: "NewConversation",
+  NewConversationGroup: "NewConversationGroup",
   ConversationChanged: "ConversationChanged",
+  ConversationChangedGroup: "ConversationChangedGroup",
   MemberEnter: "MemberEnter",
   MemberLeave: "MemberLeave",
 };
