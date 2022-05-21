@@ -83,6 +83,9 @@ export class ImSdk {
   static async getConversationList(page, size) {
     return TencentIm.getConversationList(page, size);
   }
+  static async getGroupMemberList(groupID, page) {
+    return TencentIm.getGroupMemberList(groupID, page);
+  }
   static async sendC2CTextMessage(text, userID) {
     return TencentIm.sendC2CTextMessage(text, userID);
   }
