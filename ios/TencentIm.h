@@ -6,4 +6,6 @@
 
 @interface TencentIm : RCTEventEmitter <RCTBridgeModule, V2TIMSDKListener, V2TIMAdvancedMsgListener, V2TIMConversationListener, V2TIMGroupListener>
 
+typedef void (^MapCallback)(NSDictionary* map);
+
 @end
