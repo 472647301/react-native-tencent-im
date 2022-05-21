@@ -131,9 +131,6 @@ declare module "@byron-react-native/tencent-im" {
     imageOriginal: ImSdkImageElem;
     imageThumb: ImSdkImageElem;
     imageLarge: ImSdkImageElem;
-    imageOriginalUUID: string
-    imageThumbUUID: string
-    imageLargeUUID: string
     /// 消息类型 为 V2TIM_ELEM_TYPE_SOUND，soundElem 会存储语音消息内容
     soundElem: ImSdkSoundElem;
 
