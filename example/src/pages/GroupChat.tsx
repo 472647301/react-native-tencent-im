@@ -49,8 +49,8 @@ function GroupChat() {
   };
 
   const onFocus = () => {
-    setLoading(true);
-    fetchList(0).then(() => {});
+    // setLoading(true);
+    // fetchList(0).then(() => {});
     ImSdk.joinGroup(route.params.groupID, 'Hello');
     newMessage.current = ImSdk.addListener(
       ImSdkEventType.NewMessage,
@@ -86,11 +86,9 @@ function GroupChat() {
   };
 
   useEffect(() => {
-    const sub_blur = navigation.addListener('blur', onBlur);
-    const sub_focus = navigation.addListener('focus', onFocus);
+    onFocus();
     return () => {
-      sub_blur();
-      sub_focus();
+      onBlur();
     };
   }, [navigation]);
 
@@ -166,8 +164,8 @@ function GroupChat() {
   };
 
   const onFooter = async () => {
-    const res = await fetchList();
-    if (!res) return;
+    // const res = await fetchList();
+    // if (!res) return;
   };
 
   return (

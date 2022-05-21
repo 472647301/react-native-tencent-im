@@ -39,11 +39,9 @@ function HomeScreen() {
   const conversationChanged = useRef<EmitterSubscription>();
 
   useEffect(() => {
-    const sub_blur = navigation.addListener('blur', onBlur);
-    const sub_focus = navigation.addListener('focus', onFocus);
+    onFocus();
     return () => {
-      sub_blur();
-      sub_focus();
+      onBlur();
     };
   }, [navigation]);
 
@@ -108,6 +106,9 @@ function HomeScreen() {
   };
 
   const renderItem = ({item}: {item: V2TIMConversation}) => {
+    if (item.groupID) {
+      return null;
+    }
     return <ChatInfo key={item.conversationID} {...item} />;
   };
 
