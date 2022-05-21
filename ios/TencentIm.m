@@ -151,7 +151,7 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
         }
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
         for (V2TIMMessage *item in msgs) {
-            [self parseMessage:item isDownload:YES succ:^(NSDictionary *map) {
+            [self parseMessage:item isDownload:YES key:[item.msgID stringByAppendingString: @"C2CHistoryMessageList"] succ:^(NSDictionary *map) {
                 [msgArr addObject:map];
                 self->indexMessage = self->indexMessage + 1;
                 if (self->indexMessage == [msgs count]) {
@@ -179,7 +179,7 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
     [_manager getConversationList:page count:size succ:^(NSArray<V2TIMConversation *> *list, uint64_t nextSeq, BOOL isFinished) {
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
         for (V2TIMConversation *item in list) {
-            [self parseMessage:item.lastMessage isDownload:YES succ:^(NSDictionary *map) {
+            [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"ConversationList"] succ:^(NSDictionary *map) {
                 [msgArr addObject:@{
                     @"type": @(item.type),
                     @"conversationID": item.conversationID ? item.conversationID : @"",
@@ -250,7 +250,7 @@ RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
     }
     V2TIMMessage *msg = [_manager createTextMessage:text];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"C2CTextMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -279,7 +279,7 @@ RCT_EXPORT_METHOD(sendC2CCustomMessage:(NSString *)userID
     NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
     V2TIMMessage *msg = [_manager createCustomMessage:data];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"C2CCustomMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -307,7 +307,7 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)userID
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"ImageMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -328,7 +328,7 @@ RCT_EXPORT_METHOD(sendSoundMessage:(NSString *)userID
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
     [_manager sendMessage:msg receiver:userID groupID:nil priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"SoundMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -343,7 +343,7 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
                   groupID:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    if (self->_manager) {
+    if (!(self->_manager)) {
         return;
     }
     V2TIMMessage *msg = [_manager createTextMessage:text];
@@ -356,7 +356,7 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
 //        reject([@(code) stringValue], desc, err);
 //    }];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"GroupTextMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -372,13 +372,13 @@ RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
                   userID:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
-    if (self->_manager) {
+    if (!(self->_manager)) {
         return;
     }
     NSMutableArray * atUserList =[[NSMutableArray alloc] initWithObjects:userID ,nil];
     V2TIMMessage *atMsg = [_manager createTextAtMessage:text atUserList:atUserList];
     [_manager sendMessage:atMsg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:atMsg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:atMsg isDownload:NO key:[atMsg.msgID stringByAppendingString: @"GroupAtTextMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -399,7 +399,7 @@ RCT_EXPORT_METHOD(sendGroupCustomMessage:(NSString *)groupID
     NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
     V2TIMMessage *msg = [_manager createCustomMessage:data];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"GroupCustomMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -419,7 +419,7 @@ RCT_EXPORT_METHOD(sendGroupImageMessage:(NSString *)groupID
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"GroupImageMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -440,7 +440,7 @@ RCT_EXPORT_METHOD(sendGroupSoundMessage:(NSString *)groupID
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
     [_manager sendMessage:msg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
-        [self parseMessage:msg isDownload:NO succ:^(NSDictionary *map) {
+        [self parseMessage:msg isDownload:NO key:[msg.msgID stringByAppendingString: @"GroupSoundMessage"] succ:^(NSDictionary *map) {
             resolve(map);
         }];
     } fail:^(int code, NSString *desc) {
@@ -515,7 +515,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
 }
 
 - (void)onRecvNewMessage:(V2TIMMessage *)msg {
-    [self parseMessage:msg isDownload:YES succ:^(NSDictionary *map) {
+    [self parseMessage:msg isDownload:YES key:[msg.msgID stringByAppendingString: @"NewMessage"] succ:^(NSDictionary *map) {
         [self sendEventWithName:@"NewMessage" body:map];
     }];
 }
@@ -526,7 +526,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         return;
     }
     V2TIMConversation *item = conversationList[0];
-    [self parseMessage:item.lastMessage isDownload:YES succ:^(NSDictionary *map) {
+    [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"NewConversation"] succ:^(NSDictionary *map) {
         [self sendEventWithName:@"NewConversation" body:@{
             @"type": @(item.type),
             @"conversationID": item.conversationID ? item.conversationID : @"",
@@ -548,7 +548,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         return;
     }
     V2TIMConversation *item = conversationList[0];
-    [self parseMessage:item.lastMessage isDownload:YES succ:^(NSDictionary *map) {
+    [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"ConversationChanged"] succ:^(NSDictionary *map) {
         [self sendEventWithName:@"ConversationChanged" body:@{
             @"type": @(item.type),
             @"conversationID": item.conversationID ? item.conversationID : @"",
@@ -610,7 +610,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
   ];
 }
 
--(void)parseMessage:(V2TIMMessage *)msg isDownload:(BOOL)isDownload succ:(MapCallback)succ {
+-(void)parseMessage:(V2TIMMessage *)msg isDownload:(BOOL)isDownload key:(NSString*)key succ:(MapCallback)succ {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
     NSTimeInterval interval = [msg.timestamp timeIntervalSince1970] * 1000;
     NSInteger time = interval;
@@ -643,7 +643,7 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         NSDictionary *result = [dict copy];
         succ(result);
     } else if (msg.elemType == V2TIM_ELEM_TYPE_IMAGE) {
-        [indexImage setValue:@"0" forKey:msg.msgID];
+        [indexImage setValue:@"0" forKey:key];
         for (V2TIMImage *imageElem in msg.imageElem.imageList) {
             NSString *imagePath = [NSTemporaryDirectory() stringByAppendingPathComponent:[NSString stringWithFormat: @"im_image%@",imageElem.uuid]];
             if (![[NSFileManager defaultManager] fileExistsAtPath:imagePath]) {
@@ -659,13 +659,13 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                             [dict setValue:[self parseMessageImage:imageElem imagePath:msg.imageElem.path] forKey:@"imageLarge"];
                             break;
                     }
-                    NSString *oldVal = [indexImage objectForKey:msg.msgID];
+                    NSString *oldVal = [indexImage objectForKey:key];
                     long index = [oldVal longLongValue];
-                    [indexImage removeObjectForKey:msg.msgID];
+                    [indexImage removeObjectForKey:key];
                     long newIndex = index + 1;
-                    [indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:msg.msgID];
+                    [indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
                     if (newIndex == [msg.imageElem.imageList count]) {
-                        [indexImage removeObjectForKey:msg.msgID];
+                        [indexImage removeObjectForKey:key];
                         NSDictionary *result = [dict copy];
                         succ(result);
                     }
@@ -684,35 +684,24 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                                 [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
                                 break;
                         }
-                        NSString *oldVal = [self->indexImage objectForKey:msg.msgID];
+                        NSString *oldVal = [self->indexImage objectForKey:key];
                         long index = [oldVal longLongValue];
-                        [self->indexImage removeObjectForKey:msg.msgID];
+                        [self->indexImage removeObjectForKey:key];
                         long newIndex = index + 1;
-                        [self->indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:msg.msgID];
+                        [self->indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
                         if (newIndex == [msg.imageElem.imageList count]) {
-                            [self->indexImage removeObjectForKey:msg.msgID];
+                            [self->indexImage removeObjectForKey:key];
                             NSDictionary *result = [dict copy];
                             succ(result);
                         }
                     } fail:^(int code, NSString *desc) {
-                        switch (imageElem.type) {
-                            case V2TIM_IMAGE_TYPE_ORIGIN:
-                                [dict setValue:[self parseMessageImage:imageElem imagePath:imageElem.url] forKey:@"imageOriginal"];
-                                break;
-                            case V2TIM_IMAGE_TYPE_THUMB:
-                                [dict setValue:[self parseMessageImage:imageElem imagePath:imageElem.url] forKey:@"imageThumb"];
-                                break;
-                            default:
-                                [dict setValue:[self parseMessageImage:imageElem imagePath:imageElem.url] forKey:@"imageLarge"];
-                                break;
-                        }
-                        NSString *oldVal = [self->indexImage objectForKey:msg.msgID];
+                        NSString *oldVal = [self->indexImage objectForKey:key];
                         long index = [oldVal longLongValue];
-                        [self->indexImage removeObjectForKey:msg.msgID];
+                        [self->indexImage removeObjectForKey:key];
                         long newIndex = index + 1;
-                        [self->indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:msg.msgID];
+                        [self->indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
                         if (newIndex == [msg.imageElem.imageList count]) {
-                            [self->indexImage removeObjectForKey:msg.msgID];
+                            [self->indexImage removeObjectForKey:key];
                             NSDictionary *result = [dict copy];
                             succ(result);
                         }
@@ -730,13 +719,13 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                         [dict setValue:[self parseMessageImage:imageElem imagePath:imagePath] forKey:@"imageLarge"];
                         break;
                 }
-                NSString *oldVal = [indexImage objectForKey:msg.msgID];
+                NSString *oldVal = [indexImage objectForKey:key];
                 long index = [oldVal longLongValue];
-                [indexImage removeObjectForKey:msg.msgID];
+                [indexImage removeObjectForKey:key];
                 long newIndex = index + 1;
-                [indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:msg.msgID];
+                [indexImage setValue:[[NSNumber numberWithLong:newIndex] stringValue] forKey:key];
                 if (newIndex == [msg.imageElem.imageList count]) {
-                    [indexImage removeObjectForKey:msg.msgID];
+                    [indexImage removeObjectForKey:key];
                     NSDictionary *result = [dict copy];
                     succ(result);
                 }
@@ -758,7 +747,6 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
                     NSDictionary *result = [dict copy];
                     succ(result);
                 } fail:^(int code, NSString *desc) {
-                    [dict setValue:[self parseMessageSound:soundElem soundPath:@""] forKey:@"soundElem"];
                     NSDictionary *result = [dict copy];
                     succ(result);
                 }];
