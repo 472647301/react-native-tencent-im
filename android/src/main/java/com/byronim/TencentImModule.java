@@ -216,7 +216,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 }
                 WritableArray msgArr = Arguments.createArray();
                 for (V2TIMMessage item : v2TIMMessages) {
-                    parseMessage(item, new MapCallback() {
+                    parseMessage(item, item.getMsgID() + indexMessage, new MapCallback() {
                         @Override
                         public void onSuccess(WritableMap map) {
                             msgArr.pushMap(map);
@@ -260,7 +260,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     data.putString("faceUrl", item.getFaceUrl());
                     data.putInt("unreadCount", item.getUnreadCount());
                     data.putInt("recvOpt", item.getRecvOpt());
-                    parseMessage(item.getLastMessage(), new MapCallback() {
+                    parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + indexConversation, new MapCallback() {
                         @Override
                         public void onSuccess(WritableMap map) {
                             data.putMap("lastMessage", map);
@@ -324,7 +324,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "C2CTextMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -346,7 +346,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "C2CCustomMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -368,7 +368,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "ImageMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -394,7 +394,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "SoundMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -420,7 +420,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupTextMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -444,7 +444,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupAtTextMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -470,7 +470,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupCustomMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -492,7 +492,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupImageMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -518,7 +518,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             }
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
-                parseMessage(v2TIMMessage, new MapCallback() {
+                parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupSoundMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
                         promise.resolve(map);
@@ -616,7 +616,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             data.putString("faceUrl", item.getFaceUrl());
             data.putInt("unreadCount", item.getUnreadCount());
             data.putInt("recvOpt", item.getRecvOpt());
-            parseMessage(item.getLastMessage(), new MapCallback() {
+            parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "NewConversation", new MapCallback() {
                 @Override
                 public void onSuccess(WritableMap map) {
                     data.putMap("lastMessage", map);
@@ -640,7 +640,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             data.putString("faceUrl", item.getFaceUrl());
             data.putInt("unreadCount", item.getUnreadCount());
             data.putInt("recvOpt", item.getRecvOpt());
-            parseMessage(item.getLastMessage(), new MapCallback() {
+            parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "ConversationChanged", new MapCallback() {
                 @Override
                 public void onSuccess(WritableMap map) {
                     data.putMap("lastMessage", map);
@@ -684,7 +684,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private final V2TIMAdvancedMsgListener v2TIMAdvancedMsgListener = new V2TIMAdvancedMsgListener() {
         @Override
         public void onRecvNewMessage(V2TIMMessage msg) {
-            parseMessage(msg, new MapCallback() {
+            parseMessage(msg, msg.getMsgID() + "NewMessage", new MapCallback() {
                 @Override
                 public void onSuccess(WritableMap map) {
                     eventEmitter.emit("NewMessage", map);
@@ -693,7 +693,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         }
     };
 
-    public void parseMessage(V2TIMMessage msg, MapCallback cb) {
+    public void parseMessage(V2TIMMessage msg, String key, MapCallback cb) {
         WritableMap map = Arguments.createMap();
 
         WritableArray groupAtUserList = Arguments.createArray();
@@ -731,7 +731,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             map.putString("customElem", customElem);
             cb.onSuccess(map);
         } else if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
-            indexImage.put(msg.getMsgID(), 0);
+            indexImage.put(key, 0);
             for (V2TIMImageElem.V2TIMImage v2TIMImage : msg.getImageElem().getImageList()) {
                 String uuid = v2TIMImage.getUUID();
                 WritableMap data = Arguments.createMap();
@@ -768,39 +768,39 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         }
                         @Override
                         public void onError(int code, String desc) {
-                            Integer index = indexImage.get(msg.getMsgID());
-                            indexImage.remove(msg.getMsgID());
+                            Integer index = indexImage.get(key);
+                            indexImage.remove(key);
                             if (index != null) {
                                 int newIndex = index + 1;
-                                indexImage.put(msg.getMsgID(), newIndex);
+                                indexImage.put(key, newIndex);
                                 if (newIndex == msg.getImageElem().getImageList().size()) {
-                                    indexImage.remove(msg.getMsgID());
+                                    indexImage.remove(key);
                                     cb.onSuccess(map);
                                 }
                             }
                         }
                         @Override
                         public void onSuccess() {
-                            Integer index = indexImage.get(msg.getMsgID());
-                            indexImage.remove(msg.getMsgID());
+                            Integer index = indexImage.get(key);
+                            indexImage.remove(key);
                             if (index != null) {
                                 int newIndex = index + 1;
-                                indexImage.put(msg.getMsgID(), newIndex);
+                                indexImage.put(key, newIndex);
                                 if (newIndex == msg.getImageElem().getImageList().size()) {
-                                    indexImage.remove(msg.getMsgID());
+                                    indexImage.remove(key);
                                     cb.onSuccess(map);
                                 }
                             }
                         }
                     });
                 } else {
-                    Integer index = indexImage.get(msg.getMsgID());
-                    indexImage.remove(msg.getMsgID());
+                    Integer index = indexImage.get(key);
+                    indexImage.remove(key);
                     if (index != null) {
                         int newIndex = index + 1;
-                        indexImage.put(msg.getMsgID(), newIndex);
+                        indexImage.put(key, newIndex);
                         if (newIndex == msg.getImageElem().getImageList().size()) {
-                            indexImage.remove(msg.getMsgID());
+                            indexImage.remove(key);
                             cb.onSuccess(map);
                         }
                     }
