@@ -238,7 +238,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             return;
         }
         indexConversation = 0;
-        conversationManager.getConversationList((long) page, size, new V2TIMValueCallback<V2TIMConversationResult>() {
+        conversationManager.getConversationList(page, size, new V2TIMValueCallback<V2TIMConversationResult>() {
             @Override
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
@@ -279,7 +279,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void getConversationList(String groupID, int page, Promise promise) {
+    public void getGroupMemberList(String groupID, int page, Promise promise) {
         if (manager == null) {
             return;
         }
