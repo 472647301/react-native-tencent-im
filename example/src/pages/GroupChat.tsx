@@ -53,9 +53,9 @@ function GroupChat() {
     fetchList(0).then(() => {});
     ImSdk.joinGroup(route.params.groupID, 'Hello');
     newMessage.current = ImSdk.addListener(
-      ImSdkEventType.NewMessage,
+      ImSdkEventType.NewMessageGroup,
       (data: V2TIMMessage) => {
-        console.log(' >> NewMessage', data);
+        console.log(' >> NewMessageGroup', data);
         // setList([data].concat(listRef.current));
       },
     );
