@@ -55,14 +55,22 @@ function HomeScreen() {
     fetchList(true);
     newConversation.current = ImSdk.addListener(
       ImSdkEventType.NewConversation,
-      () => {
+      (data: V2TIMConversation) => {
+        if (data.groupID) {
+          return;
+        }
         fetchList(true);
+        console.log(' >> NewConversation', data);
       },
     );
     conversationChanged.current = ImSdk.addListener(
       ImSdkEventType.ConversationChanged,
-      () => {
+      (data: V2TIMConversation) => {
+        if (data.groupID) {
+          return;
+        }
         fetchList(true);
+        console.log(' >> ConversationChanged', data);
       },
     );
     console.log(' >> HomeScreen onFocus', route.params);
