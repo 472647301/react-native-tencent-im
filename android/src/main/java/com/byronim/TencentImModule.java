@@ -701,7 +701,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private final V2TIMAdvancedMsgListener v2TIMAdvancedMsgListener = new V2TIMAdvancedMsgListener() {
         @Override
         public void onRecvNewMessage(V2TIMMessage msg) {
-            if (msg.getGroupID().isEmpty()) {
+            if (msg.getGroupID() == null || msg.getGroupID().isEmpty()) {
                 parseMessage(msg, msg.getMsgID() + "NewMessage", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
@@ -773,6 +773,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     case V2TIMImageElem.V2TIM_IMAGE_TYPE_ORIGIN:
                         map.putMap("imageOriginal", data);
                         break;
+                    case V2TIMImageElem.V2TIM_IMAGE_TYPE_THUMB:
+                        map.putMap("imageThumb", data);
+                        break;
                     case V2TIMImageElem.V2TIM_IMAGE_TYPE_LARGE:
                         map.putMap("imageLarge", data);
                         break;
@@ -799,14 +802,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         @Override
                         public void onSuccess() {
                             if (v2TIMImage.getType() == V2TIMImageElem.V2TIM_IMAGE_TYPE_THUMB) {
-                                map.putMap("imageThumb", data);
                                 cb.onSuccess(map);
                             }
                         }
                     });
                 } else {
                     if (index == msg.getImageElem().getImageList().size()) {
-                        map.putMap("imageThumb", data);
                         cb.onSuccess(map);
                     }
                 }
