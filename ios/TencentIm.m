@@ -209,6 +209,22 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
     }];
 }
 
+RCT_EXPORT_METHOD(deleteConversation:(NSString *)conversationID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager deleteConversation:conversationID succ:^{
+        resolve(nil);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.deleteConversation" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
 RCT_EXPORT_METHOD(getGroupMemberList:(NSString *)groupID
                   page:(int)page
                   resolver:(RCTPromiseResolveBlock)resolve
