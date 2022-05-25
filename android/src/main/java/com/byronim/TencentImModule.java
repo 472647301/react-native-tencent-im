@@ -22,6 +22,9 @@ import com.tencent.imsdk.v2.V2TIMConversationManager;
 import com.tencent.imsdk.v2.V2TIMConversationResult;
 import com.tencent.imsdk.v2.V2TIMDownloadCallback;
 import com.tencent.imsdk.v2.V2TIMElem;
+import com.tencent.imsdk.v2.V2TIMFriendInfo;
+import com.tencent.imsdk.v2.V2TIMFriendOperationResult;
+import com.tencent.imsdk.v2.V2TIMFriendshipManager;
 import com.tencent.imsdk.v2.V2TIMGroupListener;
 import com.tencent.imsdk.v2.V2TIMGroupManager;
 import com.tencent.imsdk.v2.V2TIMGroupMemberFullInfo;
@@ -50,6 +53,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     private V2TIMMessageManager messageManager;
     private V2TIMConversationManager conversationManager;
     private V2TIMGroupManager groupManager;
+    private V2TIMFriendshipManager friendshipManager;
     private V2TIMMessage lastMsg;
     private int indexConversation = 0;
     private int indexMessage = 0;
@@ -72,6 +76,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             messageManager = V2TIMManager.getMessageManager();
             conversationManager = V2TIMManager.getConversationManager();
             groupManager = V2TIMManager.getGroupManager();
+            friendshipManager = V2TIMManager.getFriendshipManager();
         }
         V2TIMSDKConfig config = new V2TIMSDKConfig();
         switch (logLevel) {
@@ -143,8 +148,16 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             return;
         }
         V2TIMUserFullInfo info = new V2TIMUserFullInfo();
-        info.setNickname(params.getString("nickName"));
-        info.setFaceUrl(params.getString("faceURL"));
+        if (params.getString("nickName") != null) {
+            info.setNickname(params.getString("nickName"));
+        }
+        if (params.getString("faceURL") != null) {
+            info.setFaceUrl(params.getString("faceURL"));
+        }
+        if (params.getString("selfSignature") != null) {
+            info.setSelfSignature(params.getString("selfSignature"));
+        }
+        info.setGender(params.getInt("gender"));
         manager.setSelfInfo(info, new V2TIMCallback() {
             @Override
             public void onError(int var1, String var2) {
@@ -189,6 +202,79 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             @Override
             public void onSuccess() {
                 promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void addToBlackList(ReadableArray userIDList, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        List<String> list = new ArrayList<>();
+        for (int i=0; i<userIDList.size(); i++) {
+            list.add(userIDList.getString(i));
+        }
+        friendshipManager.addToBlackList(list, new V2TIMValueCallback<List<V2TIMFriendOperationResult>>() {
+            @Override
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
+            }
+
+            @Override
+            public void onSuccess(List<V2TIMFriendOperationResult> v2TIMFriendOperationResults) {
+                promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void deleteFromBlackList(ReadableArray userIDList, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        List<String> list = new ArrayList<>();
+        for (int i=0; i<userIDList.size(); i++) {
+            list.add(userIDList.getString(i));
+        }
+        friendshipManager.deleteFromBlackList(list, new V2TIMValueCallback<List<V2TIMFriendOperationResult>>() {
+            @Override
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
+            }
+
+            @Override
+            public void onSuccess(List<V2TIMFriendOperationResult> v2TIMFriendOperationResults) {
+                promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
+    public void getBlackList(Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        friendshipManager.getBlackList(new V2TIMValueCallback<List<V2TIMFriendInfo>>() {
+            @Override
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
+            }
+
+            @Override
+            public void onSuccess(List<V2TIMFriendInfo> v2TIMFriendInfos) {
+                WritableArray arr = Arguments.createArray();
+                for (V2TIMFriendInfo item : v2TIMFriendInfos) {
+                    WritableMap map = Arguments.createMap();
+                    map.putString("userID", item.getUserID());
+                    map.putString("nickName", item.getUserProfile().getNickName());
+                    map.putString("faceURL", item.getUserProfile().getFaceUrl());
+                    map.putString("friendRemark", item.getFriendRemark());
+                    map.putString("selfSignature", item.getUserProfile().getSelfSignature());
+                    map.putInt("gender", item.getUserProfile().getGender());
+                    arr.pushMap(map);
+                }
+                promise.resolve(arr);
             }
         });
     }
