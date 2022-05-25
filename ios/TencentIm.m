@@ -131,6 +131,38 @@ RCT_EXPORT_METHOD(markGroupMessageAsRead:(NSString *)groupID
     }];
 }
 
+RCT_EXPORT_METHOD(addToBlackList:(NSArray *)userIDList
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager addToBlackList:userIDList succ:^(NSArray<V2TIMFriendOperationResult *> *resultList) {
+        resolve(nil);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.addToBlackList" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
+RCT_EXPORT_METHOD(deleteFromBlackList:(NSArray *)userIDList
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager deleteFromBlackList:userIDList succ:^(NSArray<V2TIMFriendOperationResult *> *resultList) {
+        resolve(nil);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.deleteFromBlackList" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
 RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                   size:(int)size
                   isFirst:(BOOL)isFirst
