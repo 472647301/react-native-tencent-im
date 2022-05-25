@@ -80,6 +80,12 @@ export class ImSdk {
   static async markGroupMessageAsRead(groupID) {
     return TencentIm.markGroupMessageAsRead(groupID);
   }
+  static async addToBlackList(userIDList) {
+    return TencentIm.addToBlackList(userIDList);
+  }
+  static async deleteFromBlackList(userIDList) {
+    return TencentIm.deleteFromBlackList(userIDList);
+  }
   static async getC2CHistoryMessageList(userID, size, isFirst = false) {
     return TencentIm.getC2CHistoryMessageList(userID, size, isFirst);
   }
