@@ -87,7 +87,7 @@ export class ImSdk {
     return TencentIm.getConversationList(page, size);
   }
   static async deleteConversation(conversationID) {
-    return TencentIm.deleteConversation(conversationID)
+    return TencentIm.deleteConversation(conversationID);
   }
   static async getGroupMemberList(groupID, page) {
     return TencentIm.getGroupMemberList(groupID, page);
