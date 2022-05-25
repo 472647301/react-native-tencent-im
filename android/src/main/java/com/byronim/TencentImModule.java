@@ -118,6 +118,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess() {
                 promise.resolve(null);
@@ -135,6 +136,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess() {
                 promise.resolve(null);
@@ -163,6 +165,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess() {
                 promise.resolve(null);
@@ -212,7 +215,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             return;
         }
         List<String> list = new ArrayList<>();
-        for (int i=0; i<userIDList.size(); i++) {
+        for (int i = 0; i < userIDList.size(); i++) {
             list.add(userIDList.getString(i));
         }
         friendshipManager.addToBlackList(list, new V2TIMValueCallback<List<V2TIMFriendOperationResult>>() {
@@ -234,7 +237,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             return;
         }
         List<String> list = new ArrayList<>();
-        for (int i=0; i<userIDList.size(); i++) {
+        for (int i = 0; i < userIDList.size(); i++) {
             list.add(userIDList.getString(i));
         }
         friendshipManager.deleteFromBlackList(list, new V2TIMValueCallback<List<V2TIMFriendOperationResult>>() {
@@ -293,6 +296,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(final List<V2TIMMessage> v2TIMMessages) {
                 if (v2TIMMessages.size() != 0) {
@@ -327,11 +331,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMConversationResult v2TIMConversationResult) {
                 WritableMap body = Arguments.createMap();
                 WritableArray msgArr = Arguments.createArray();
-                body.putInt("page", (int)v2TIMConversationResult.getNextSeq());
+                body.putInt("page", (int) v2TIMConversationResult.getNextSeq());
                 body.putBoolean("is_finished", v2TIMConversationResult.isFinished());
                 for (V2TIMConversation item : v2TIMConversationResult.getConversationList()) {
                     WritableMap data = Arguments.createMap();
@@ -395,12 +400,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onSuccess(V2TIMGroupMemberInfoResult v2TIMGroupMemberInfoResult) {
                 WritableMap body = Arguments.createMap();
                 WritableArray msgArr = Arguments.createArray();
-                body.putInt("page", (int)v2TIMGroupMemberInfoResult.getNextSeq());
+                body.putInt("page", (int) v2TIMGroupMemberInfoResult.getNextSeq());
                 for (V2TIMGroupMemberFullInfo item : v2TIMGroupMemberInfoResult.getMemberInfoList()) {
                     WritableMap data = Arguments.createMap();
                     data.putInt("role", item.getRole());
-                    data.putInt("muteUntil", (int)item.getMuteUntil());
-                    data.putInt("joinTime", (int)item.getJoinTime());
+                    data.putInt("muteUntil", (int) item.getMuteUntil());
+                    data.putInt("joinTime", (int) item.getJoinTime());
                     data.putString("userID", item.getUserID());
                     data.putString("nickName", item.getNickName());
                     data.putString("friendRemark", item.getFriendRemark());
@@ -424,6 +429,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "C2CTextMessage", new MapCallback() {
@@ -441,11 +447,16 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         if (manager == null) {
             return;
         }
-        manager.sendC2CCustomMessage(params.toString().getBytes(), userID, new V2TIMValueCallback<V2TIMMessage>() {
+        String customData = params.toString();
+        if (customData.startsWith("{ NativeMap:")) {
+            customData = customData.substring(12, customData.length() - 1);
+        }
+        manager.sendC2CCustomMessage(customData.getBytes(), userID, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "C2CCustomMessage", new MapCallback() {
@@ -468,6 +479,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "ImageMessage", new MapCallback() {
@@ -477,6 +489,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                 });
             }
+
             @Override
             public void onProgress(int progress) {
                 // 上传进度（0-100）
@@ -494,6 +507,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "SoundMessage", new MapCallback() {
@@ -503,6 +517,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                 });
             }
+
             @Override
             public void onProgress(int progress) {
                 // 上传进度（0-100）
@@ -520,6 +535,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupTextMessage", new MapCallback() {
@@ -538,7 +554,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             return;
         }
         List<String> atList = new ArrayList<>();
-        for (int i=0; i<userID_userName.size(); i++) {
+        for (int i = 0; i < userID_userName.size(); i++) {
             atList.add(userID_userName.getString(i));
         }
         messageManager.sendMessage(messageManager.createTextAtMessage(text, atList), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
@@ -546,6 +562,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupAtTextMessage", new MapCallback() {
@@ -555,6 +572,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                 });
             }
+
             @Override
             public void onProgress(int progress) {
 
@@ -567,11 +585,16 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         if (manager == null) {
             return;
         }
-        manager.sendGroupCustomMessage(params.toString().getBytes(), groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, new V2TIMValueCallback<V2TIMMessage>() {
+        String customData = params.toString();
+        if (customData.startsWith("{ NativeMap:")) {
+            customData = customData.substring(12, customData.length() - 1);
+        }
+        manager.sendGroupCustomMessage(customData.getBytes(), groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, new V2TIMValueCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupCustomMessage", new MapCallback() {
@@ -594,6 +617,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupImageMessage", new MapCallback() {
@@ -603,6 +627,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                 });
             }
+
             @Override
             public void onProgress(int progress) {
 
@@ -620,6 +645,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess(V2TIMMessage v2TIMMessage) {
                 parseMessage(v2TIMMessage, v2TIMMessage.getMsgID() + "GroupSoundMessage", new MapCallback() {
@@ -629,6 +655,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     }
                 });
             }
+
             @Override
             public void onProgress(int progress) {
 
@@ -646,6 +673,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess() {
                 promise.resolve(null);
@@ -663,6 +691,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             public void onError(int var1, String var2) {
                 promise.reject(String.valueOf(var1), var2);
             }
+
             @Override
             public void onSuccess() {
                 promise.resolve(null);
@@ -676,26 +705,31 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             // 正在连接到腾讯云服务器
             eventEmitter.emit("Connecting", null);
         }
+
         @Override
         public void onConnectSuccess() {
             // 已经成功连接到腾讯云服务器
             eventEmitter.emit("ConnectSuccess", null);
         }
+
         @Override
         public void onConnectFailed(int code, String error) {
             // 连接腾讯云服务器失败
             eventEmitter.emit("ConnectFailed", null);
         }
+
         @Override
         public void onKickedOffline() {
             // 当前用户被踢下线
             eventEmitter.emit("KickedOffline", null);
         }
+
         @Override
         public void onUserSigExpired() {
             // 登录票据已经过期
             eventEmitter.emit("UserSigExpired", null);
         }
+
         @Override
         public void onSelfInfoUpdated(V2TIMUserFullInfo info) {
             // 当前用户的资料发生了更新
@@ -738,6 +772,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 });
             }
         }
+
         @Override
         public void onConversationChanged(List<V2TIMConversation> conversationList) {
             if (conversationList.size() == 0) {
@@ -762,7 +797,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         eventEmitter.emit("ConversationChanged", data);
                     }
                 });
-            } else  {
+            } else {
                 parseMessage(item.getLastMessage(), item.getLastMessage().getMsgID() + "ConversationChangedGroup", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
@@ -791,6 +826,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             body.putArray("data", listArr);
             eventEmitter.emit("MemberEnter", body);
         }
+
         @Override
         public void onMemberLeave(String groupID, V2TIMGroupMemberInfo member) {
             WritableMap map = Arguments.createMap();
@@ -815,7 +851,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         eventEmitter.emit("NewMessage", map);
                     }
                 });
-            } else  {
+            } else {
                 parseMessage(msg, msg.getMsgID() + "NewMessageGroup", new MapCallback() {
                     @Override
                     public void onSuccess(WritableMap map) {
@@ -841,7 +877,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             textElem.putString("text", "");
         }
         map.putString("msgID", msg.getMsgID());
-        map.putInt("timestamp", (int)msg.getTimestamp());
+        map.putInt("timestamp", (int) msg.getTimestamp());
         map.putString("sender", msg.getSender());
         map.putString("nickName", msg.getNickName());
         map.putString("friendRemark", msg.getFriendRemark());
@@ -858,9 +894,6 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         map.putMap("textElem", textElem);
         if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_CUSTOM) {
             String customElem = new String(msg.getCustomElem().getData());
-            if (customElem.startsWith("{ NativeMap:")) {
-                customElem = customElem.substring(12, customElem.length() - 1);
-            }
             map.putString("customElem", customElem);
             cb.onSuccess(map);
         } else if (msg.getElemType() == V2TIMMessage.V2TIM_ELEM_TYPE_IMAGE) {
@@ -888,7 +921,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         break;
                 }
                 File dir = imageFile.getParentFile();
-                if(dir != null && !dir.exists()) {
+                if (dir != null && !dir.exists()) {
                     if (!dir.mkdirs()) {
                         cb.onSuccess(map);
                         return;
@@ -900,12 +933,14 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                         public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
 
                         }
+
                         @Override
                         public void onError(int code, String desc) {
                             if (v2TIMImage.getType() == V2TIMImageElem.V2TIM_IMAGE_TYPE_THUMB) {
                                 cb.onSuccess(map);
                             }
                         }
+
                         @Override
                         public void onSuccess() {
                             if (v2TIMImage.getType() == V2TIMImageElem.V2TIM_IMAGE_TYPE_THUMB) {
@@ -932,7 +967,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             File soundFile = new File(soundPath);
             if (!soundFile.exists()) {
                 File dir = soundFile.getParentFile();
-                if(dir != null && !dir.exists()) {
+                if (dir != null && !dir.exists()) {
                     if (!dir.mkdirs()) {
                         cb.onSuccess(map);
                         return;
@@ -943,10 +978,12 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     public void onProgress(V2TIMElem.V2ProgressInfo progressInfo) {
 
                     }
+
                     @Override
                     public void onError(int code, String desc) {
                         cb.onSuccess(map);
                     }
+
                     @Override
                     public void onSuccess() {
                         cb.onSuccess(map);
@@ -958,7 +995,9 @@ public class TencentImModule extends ReactContextBaseJavaModule {
         } else {
             cb.onSuccess(map);
         }
-    };
+    }
+
+    ;
 
     public interface MapCallback {
         void onSuccess(WritableMap map);
