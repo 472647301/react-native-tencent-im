@@ -243,7 +243,7 @@ declare module "@byron-react-native/tencent-im" {
     /**
      * 新消息通知
      */
-     "NewMessageGroup" = "NewMessageGroup",
+    "NewMessageGroup" = "NewMessageGroup",
     /**
      * 收到会话新增的回调
      */
@@ -251,7 +251,7 @@ declare module "@byron-react-native/tencent-im" {
     /**
      * 收到会话新增的回调
      */
-     "NewConversationGroup" = "NewConversationGroup",
+    "NewConversationGroup" = "NewConversationGroup",
     /**
      * 收到会话更新的回调
      */
@@ -259,7 +259,7 @@ declare module "@byron-react-native/tencent-im" {
     /**
      * 收到会话更新的回调
      */
-     "ConversationChangedGroup" = "ConversationChangedGroup",
+    "ConversationChangedGroup" = "ConversationChangedGroup",
     /**
      * 有新成员加入群（该群所有的成员都能收到）
      */
@@ -313,7 +313,7 @@ declare module "@byron-react-native/tencent-im" {
     static logout: () => Promise<void>;
     static setSelfInfo: (nickName: string, faceURL: string) => Promise<void>;
     static markC2CMessageAsRead: (userID: string) => Promise<void>;
-    static markGroupMessageAsRead: (userID: string) => Promise<void>;
+    static markGroupMessageAsRead: (groupID: string) => Promise<void>;
     static getC2CHistoryMessageList: (
       userID: string,
       size: number,
@@ -358,7 +358,7 @@ declare module "@byron-react-native/tencent-im" {
     static sendGroupAtTextMessage: (
       text: string,
       groupID: string,
-      atUserID: string
+      userID_userName: Array<string>
     ) => Promise<V2TIMMessage>;
     static sendGroupCustomMessage: (
       groupID: string,
