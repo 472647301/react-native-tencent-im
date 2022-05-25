@@ -762,10 +762,10 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
         succ(result);
     } else if (msg.elemType == V2TIM_ELEM_TYPE_CUSTOM) {
         NSString *customElem = [[NSString alloc] initWithData:msg.customElem.data encoding:NSUTF8StringEncoding];
-        if ([customElem hasPrefix:@"{ NativeMap:"]) {
-            customElem = [customElem substringFromIndex: 12];
-            customElem = [customElem substringToIndex:customElem.length - 1];
-        }
+//        if ([customElem hasPrefix:@"{ NativeMap:"]) {
+//            customElem = [customElem substringFromIndex: 12];
+//            customElem = [customElem substringToIndex:customElem.length - 1];
+//        }
         [dict setValue:customElem forKey:@"customElem"];
         NSDictionary *result = [dict copy];
         succ(result);
