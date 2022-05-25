@@ -163,6 +163,32 @@ RCT_EXPORT_METHOD(deleteFromBlackList:(NSArray *)userIDList
     }];
 }
 
+RCT_EXPORT_METHOD(getBlackList:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject) {
+    if (!(self->_manager)) {
+        return;
+    }
+    [_manager getBlackList:^(NSArray<V2TIMFriendInfo *> *infoList) {
+        NSMutableArray *arr = [[NSMutableArray alloc] init];
+        for (V2TIMFriendInfo *item in infoList) {
+            [arr addObject:@{
+                @"userID": item.userID ? item.userID : @"",
+                @"nickName": item.userFullInfo.nickName ? item.userFullInfo.nickName : @"",
+                @"faceURL": item.userFullInfo.faceURL ? item.userFullInfo.faceURL  : @"",
+                @"friendRemark": item.friendRemark ? item.friendRemark : @"",
+                @"selfSignature": item.userFullInfo.selfSignature ? item.userFullInfo.selfSignature : @"",
+                @"gender": @(item.userFullInfo.gender),
+            }];
+        }
+        resolve(arr);
+    } fail:^(int code, NSString *desc) {
+        NSError *err = [NSError errorWithDomain:@"im.getBlackList" code:code userInfo:@{
+            @"message":desc
+        }];
+        reject([@(code) stringValue], desc, err);
+    }];
+}
+
 RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                   size:(int)size
                   isFirst:(BOOL)isFirst
