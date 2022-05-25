@@ -9,6 +9,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
@@ -428,12 +429,14 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void sendGroupAtTextMessage(String text, String groupID, String userID, Promise promise) {
+    public void sendGroupAtTextMessage(String text, String groupID, ReadableArray userID_userName, Promise promise) {
         if (manager == null) {
             return;
         }
         List<String> atList = new ArrayList<>();
-        atList.add(userID);
+        for (int i=0; i<userID_userName.size(); i++) {
+            atList.add(userID_userName.getString(i));
+        }
         messageManager.sendMessage(messageManager.createTextAtMessage(text, atList), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
             @Override
             public void onError(int var1, String var2) {
