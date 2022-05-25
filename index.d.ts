@@ -170,6 +170,21 @@ declare module "@byron-react-native/tencent-im" {
     V2TIM_GROUP_RECEIVE_NOT_NOTIFY_MESSAGE = 2, ///< 在线正常接收消息，离线不会有推送通知
   }
 
+  export enum V2TIMGender {
+    V2TIM_GENDER_UNKNOWN = 0, ///< 未知性别
+    V2TIM_GENDER_MALE = 1, ///< 男性
+    V2TIM_GENDER_FEMALE = 2, ///< 女性
+  }
+
+  export interface V2TIMFriendInfo {
+    userID: string;
+    nickName: string;
+    faceURL: string;
+    friendRemark: string;
+    selfSignature: string;
+    gender: V2TIMGender;
+  }
+
   export interface V2TIMConversation {
     /// 会话类型
     type: V2TIMConversationType;
@@ -316,6 +331,7 @@ declare module "@byron-react-native/tencent-im" {
     static markGroupMessageAsRead: (groupID: string) => Promise<void>;
     static addToBlackList: (userIDList: Array<string>) => Promise<void>;
     static deleteFromBlackList: (userIDList: Array<string>) => Promise<void>;
+    static getBlackList: () => Promise<V2TIMFriendInfo[]>;
     static getC2CHistoryMessageList: (
       userID: string,
       size: number,
