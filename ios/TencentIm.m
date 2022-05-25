@@ -87,8 +87,17 @@ RCT_EXPORT_METHOD(setSelfInfo:(NSDictionary *)params
         return;
     }
     V2TIMUserFullInfo * userInfo = [[V2TIMUserFullInfo alloc] init];
-    userInfo.nickName = params[@"nickName"];
-    userInfo.faceURL = params[@"faceURL"];
+    if (params[@"nickName"] != nil) {
+        userInfo.nickName = params[@"nickName"];
+    }
+    if (params[@"faceURL"] != nil) {
+        userInfo.faceURL = params[@"faceURL"];
+    }
+    if (params[@"selfSignature"] != nil) {
+        userInfo.selfSignature = params[@"selfSignature"];
+    }
+    NSNumber *gender = params[@"gender"];
+    userInfo.gender = [gender intValue];
     [_manager setSelfInfo:userInfo succ:^{
         resolve(nil);
     } fail:^(int code, NSString *desc) {
