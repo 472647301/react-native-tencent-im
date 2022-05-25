@@ -104,8 +104,8 @@ export class ImSdk {
   static async sendGroupTextMessage(text, groupID) {
     return TencentIm.sendGroupTextMessage(text, groupID);
   }
-  static async sendGroupAtTextMessage(text, groupID, atUserID) {
-    return TencentIm.sendGroupAtTextMessage(text, groupID, atUserID);
+  static async sendGroupAtTextMessage(text, groupID, userID_userName) {
+    return TencentIm.sendGroupAtTextMessage(text, groupID, userID_userName);
   }
   static async sendGroupCustomMessage(groupID, params) {
     return TencentIm.sendGroupCustomMessage(groupID, params);
