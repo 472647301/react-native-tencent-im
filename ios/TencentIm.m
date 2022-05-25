@@ -367,13 +367,16 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
 
 RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
                   groupID:(NSString *)groupID
-                  userID:(NSString *)userID
+                  userID_userNmae:(NSArray *)userID_userNmae
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
         return;
     }
-    NSMutableArray * atUserList =[[NSMutableArray alloc] initWithObjects:userID ,nil];
+    NSMutableArray * atUserList =[[NSMutableArray alloc] init];
+    for (int i=0; i<userID_userNmae.count; i++) {
+        [atUserList addObject:userID_userNmae[i]];
+    }
     V2TIMMessage *atMsg = [_manager createTextAtMessage:text atUserList:atUserList];
     [_manager sendMessage:atMsg receiver:nil groupID:groupID priority:V2TIM_PRIORITY_DEFAULT onlineUserOnly:NO offlinePushInfo:nil progress:nil succ:^{
         [self parseMessage:atMsg isDownload:NO key:[atMsg.msgID stringByAppendingString: @"GroupAtTextMessage"] succ:^(NSDictionary *map) {
