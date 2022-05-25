@@ -326,7 +326,14 @@ declare module "@byron-react-native/tencent-im" {
     ) => Promise<void>;
     static login: (userID: string, userSig: string) => Promise<void>;
     static logout: () => Promise<void>;
-    static setSelfInfo: (nickName: string, faceURL: string) => Promise<void>;
+    static setSelfInfo: (
+      params: Partial<{
+        nickName: string;
+        faceURL: string;
+        selfSignature: string;
+        gender: number;
+      }>
+    ) => Promise<void>;
     static markC2CMessageAsRead: (userID: string) => Promise<void>;
     static markGroupMessageAsRead: (groupID: string) => Promise<void>;
     static addToBlackList: (userIDList: Array<string>) => Promise<void>;
