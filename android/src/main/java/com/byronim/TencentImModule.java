@@ -277,6 +277,24 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void deleteConversation(String conversationID, Promise promise) {
+        if (manager == null) {
+            return;
+        }
+        conversationManager.deleteConversation(conversationID, new V2TIMCallback() {
+            @Override
+            public void onError(int var1, String var2) {
+                promise.reject(String.valueOf(var1), var2);
+            }
+
+            @Override
+            public void onSuccess() {
+                promise.resolve(null);
+            }
+        });
+    }
+
+    @ReactMethod
     public void getGroupMemberList(String groupID, int page, Promise promise) {
         if (manager == null) {
             return;
