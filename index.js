@@ -86,6 +86,9 @@ export class ImSdk {
   static async deleteFromBlackList(userIDList) {
     return TencentIm.deleteFromBlackList(userIDList);
   }
+  static async getBlackList() {
+    return TencentIm.getBlackList();
+  }
   static async getC2CHistoryMessageList(userID, size, isFirst = false) {
     return TencentIm.getC2CHistoryMessageList(userID, size, isFirst);
   }
