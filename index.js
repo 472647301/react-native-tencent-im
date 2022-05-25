@@ -71,8 +71,11 @@ export class ImSdk {
   static async logout() {
     return TencentIm.logout();
   }
-  static async setSelfInfo(nickName, faceURL) {
-    return TencentIm.setSelfInfo({ nickName, faceURL });
+  static async setSelfInfo(params) {
+    if (typeof params.gender !== "number") {
+      params.gender = 0;
+    }
+    return TencentIm.setSelfInfo(params);
   }
   static async markC2CMessageAsRead(userID) {
     return TencentIm.markC2CMessageAsRead(userID);
