@@ -1,8 +1,10 @@
-import { NativeModules, NativeEventEmitter } from "react-native";
+import { NativeModules, NativeEventEmitter, Platform } from "react-native";
 
 const { TencentIm } = NativeModules;
 
-const emitter = new NativeEventEmitter(TencentIm);
+const emitter = new NativeEventEmitter(
+  Platform.OS === "ios" ? TencentIm : null
+);
 
 export const V2TIMLogLevel = {
   V2TIM_LOG_NONE: 0, ///< 不输出任何 sdk log
