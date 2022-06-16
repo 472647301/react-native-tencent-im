@@ -50,6 +50,7 @@ RCT_EXPORT_METHOD(login:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     if ([_manager getLoginStatus] != V2TIM_STATUS_LOGOUT) {
@@ -68,6 +69,7 @@ RCT_EXPORT_METHOD(login:(NSString *)userID
 
 RCT_EXPORT_METHOD(logout:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager logout:^{
@@ -84,6 +86,7 @@ RCT_EXPORT_METHOD(setSelfInfo:(NSDictionary *)params
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMUserFullInfo * userInfo = [[V2TIMUserFullInfo alloc] init];
@@ -112,6 +115,7 @@ RCT_EXPORT_METHOD(markC2CMessageAsRead:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager markC2CMessageAsRead:userID succ:^{
@@ -128,6 +132,7 @@ RCT_EXPORT_METHOD(markGroupMessageAsRead:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager markGroupMessageAsRead:groupID succ:^{
@@ -144,6 +149,7 @@ RCT_EXPORT_METHOD(addToBlackList:(NSArray *)userIDList
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager addToBlackList:userIDList succ:^(NSArray<V2TIMFriendOperationResult *> *resultList) {
@@ -160,6 +166,7 @@ RCT_EXPORT_METHOD(deleteFromBlackList:(NSArray *)userIDList
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager deleteFromBlackList:userIDList succ:^(NSArray<V2TIMFriendOperationResult *> *resultList) {
@@ -175,6 +182,7 @@ RCT_EXPORT_METHOD(deleteFromBlackList:(NSArray *)userIDList
 RCT_EXPORT_METHOD(getBlackList:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager getBlackList:^(NSArray<V2TIMFriendInfo *> *infoList) {
@@ -204,6 +212,7 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     if (isFirst) {
@@ -238,6 +247,7 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     indexConversation = 0;
@@ -280,6 +290,7 @@ RCT_EXPORT_METHOD(deleteConversation:(NSString *)conversationID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager deleteConversation:conversationID succ:^{
@@ -297,6 +308,7 @@ RCT_EXPORT_METHOD(getGroupMemberList:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager getGroupMemberList:groupID filter:V2TIM_GROUP_MEMBER_FILTER_ALL nextSeq:page succ:^(uint64_t nextSeq, NSArray<V2TIMGroupMemberFullInfo *> *memberList) {
@@ -327,6 +339,7 @@ RCT_EXPORT_METHOD(sendC2CTextMessage:(NSString *)text
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMMessage *msg = [_manager createTextMessage:text];
@@ -355,6 +368,7 @@ RCT_EXPORT_METHOD(sendC2CCustomMessage:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
@@ -384,6 +398,7 @@ RCT_EXPORT_METHOD(sendImageMessage:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
@@ -405,6 +420,7 @@ RCT_EXPORT_METHOD(sendSoundMessage:(NSString *)userID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
@@ -425,6 +441,7 @@ RCT_EXPORT_METHOD(sendGroupTextMessage:(NSString *)text
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMMessage *msg = [_manager createTextMessage:text];
@@ -454,6 +471,7 @@ RCT_EXPORT_METHOD(sendGroupAtTextMessage:(NSString *)text
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     NSMutableArray * atUserList =[[NSMutableArray alloc] init];
@@ -478,6 +496,7 @@ RCT_EXPORT_METHOD(sendGroupCustomMessage:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     NSData *data= [NSJSONSerialization dataWithJSONObject:params options:NSJSONWritingPrettyPrinted error:nil];
@@ -499,6 +518,7 @@ RCT_EXPORT_METHOD(sendGroupImageMessage:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMMessage *msg = [_manager createImageMessage:imagePath];
@@ -520,6 +540,7 @@ RCT_EXPORT_METHOD(sendGroupSoundMessage:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     V2TIMMessage *msg = [_manager createSoundMessage:soundPath duration:duration];
@@ -540,6 +561,7 @@ RCT_EXPORT_METHOD(joinGroup:(NSString *)groupID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject) {
     if (!(self->_manager)) {
+        reject(@"404", @"manager", nil);
         return;
     }
     [_manager joinGroup:groupID msg:msg succ:^{
@@ -564,6 +586,8 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
             }];
             reject([@(code) stringValue], desc, err);
         }];
+    } else {
+        reject(@"404", @"manager", nil);
     }
 }
 
