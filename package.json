@@ -2,7 +2,7 @@
   "name": "@byron-react-native/tencent-im",
   "title": "React Native Tencent Im",
   "version": "1.0.7",
-  "description": "TODO",
+  "description": "React Native Tencent Im",
   "main": "index.js",
   "files": [
     "README.md",
