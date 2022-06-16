@@ -2,6 +2,8 @@
 
 package com.byronim;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Arguments;
@@ -348,6 +350,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 WritableArray msgArr = Arguments.createArray();
                 body.putInt("page", (int) v2TIMConversationResult.getNextSeq());
                 body.putBoolean("is_finished", v2TIMConversationResult.isFinished());
+                if (v2TIMConversationResult.getConversationList().size() == 0) {
+                    body.putArray("data", msgArr);
+                    promise.resolve(body);
+                    return;
+                }
                 for (V2TIMConversation item : v2TIMConversationResult.getConversationList()) {
                     WritableMap data = Arguments.createMap();
                     data.putInt("type", item.getType());
