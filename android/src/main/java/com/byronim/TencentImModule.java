@@ -277,6 +277,10 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             @Override
             public void onSuccess(List<V2TIMFriendInfo> v2TIMFriendInfos) {
                 WritableArray arr = Arguments.createArray();
+                if (v2TIMFriendInfos.size() == 0) {
+                    promise.resolve(arr);
+                    return;
+                }
                 for (V2TIMFriendInfo item : v2TIMFriendInfos) {
                     WritableMap map = Arguments.createMap();
                     map.putString("userID", item.getUserID());
@@ -314,6 +318,10 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                     lastMsg = v2TIMMessages.get(v2TIMMessages.size() - 1);
                 }
                 WritableArray msgArr = Arguments.createArray();
+                if (v2TIMMessages.size() == 0) {
+                    promise.resolve(msgArr);
+                    return;
+                }
                 for (V2TIMMessage item : v2TIMMessages) {
                     parseMessage(item, item.getMsgID() + "C2CHistoryMessageList", new MapCallback() {
                         @Override
@@ -420,6 +428,11 @@ public class TencentImModule extends ReactContextBaseJavaModule {
                 WritableMap body = Arguments.createMap();
                 WritableArray msgArr = Arguments.createArray();
                 body.putInt("page", (int) v2TIMGroupMemberInfoResult.getNextSeq());
+                if (v2TIMGroupMemberInfoResult.getMemberInfoList().size() == 0) {
+                    body.putArray("data", msgArr);
+                    promise.resolve(body);
+                    return;
+                }
                 for (V2TIMGroupMemberFullInfo item : v2TIMGroupMemberInfoResult.getMemberInfoList()) {
                     WritableMap data = Arguments.createMap();
                     data.putInt("role", item.getRole());
