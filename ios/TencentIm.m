@@ -187,6 +187,10 @@ RCT_EXPORT_METHOD(getBlackList:(RCTPromiseResolveBlock)resolve
     }
     [_manager getBlackList:^(NSArray<V2TIMFriendInfo *> *infoList) {
         NSMutableArray *arr = [[NSMutableArray alloc] init];
+        if ([infoList count] == 0) {
+            resolve(arr);
+            return;
+        }
         for (V2TIMFriendInfo *item in infoList) {
             [arr addObject:@{
                 @"userID": item.userID ? item.userID : @"",
@@ -224,6 +228,10 @@ RCT_EXPORT_METHOD(getC2CHistoryMessageList:(NSString *)userID
             self->_lastMsg = [msgs lastObject];
         }
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
+        if ([msgs count] == 0) {
+            resolve(msgArr);
+            return;
+        }
         for (V2TIMMessage *item in msgs) {
             [self parseMessage:item isDownload:YES key:[item.msgID stringByAppendingString: @"C2CHistoryMessageList"] succ:^(NSDictionary *map) {
                 [msgArr addObject:map];
@@ -321,6 +329,10 @@ RCT_EXPORT_METHOD(getGroupMemberList:(NSString *)groupID
     }
     [_manager getGroupMemberList:groupID filter:V2TIM_GROUP_MEMBER_FILTER_ALL nextSeq:page succ:^(uint64_t nextSeq, NSArray<V2TIMGroupMemberFullInfo *> *memberList) {
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
+        if ([memberList count] == 0) {
+            resolve(@{@"page": @(nextSeq), @"data": msgArr});
+            return;
+        }
         for (V2TIMGroupMemberFullInfo *item in memberList) {
             [msgArr addObject:@{
                 @"role": @(item.role),
