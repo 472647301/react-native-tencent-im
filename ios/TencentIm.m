@@ -883,6 +883,9 @@ RCT_EXPORT_METHOD(quitGroup:(NSString *)groupID
             NSDictionary *result = [dict copy];
             succ(result);
         }
+    } else {
+        NSDictionary *result = [dict copy];
+        succ(result);
     }
 }
 
