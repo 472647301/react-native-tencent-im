@@ -107,6 +107,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void login(String userID, String userSig, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         if (manager.getLoginStatus() != V2TIMManager.V2TIM_STATUS_LOGOUT) {
@@ -129,6 +130,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void logout(Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         manager.logout(new V2TIMCallback() {
@@ -147,6 +149,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void setSelfInfo(ReadableMap params, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         V2TIMUserFullInfo info = new V2TIMUserFullInfo();
@@ -176,6 +179,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void markC2CMessageAsRead(String userID, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         messageManager.markC2CMessageAsRead(userID, new V2TIMCallback() {
@@ -194,6 +198,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void markGroupMessageAsRead(String groupID, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         messageManager.markGroupMessageAsRead(groupID, new V2TIMCallback() {
@@ -212,6 +217,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void addToBlackList(ReadableArray userIDList, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         List<String> list = new ArrayList<>();
@@ -234,6 +240,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void deleteFromBlackList(ReadableArray userIDList, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         List<String> list = new ArrayList<>();
@@ -256,6 +263,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getBlackList(Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         friendshipManager.getBlackList(new V2TIMValueCallback<List<V2TIMFriendInfo>>() {
@@ -285,6 +293,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getC2CHistoryMessageList(String userID, int size, boolean isFirst, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         if (isFirst) {
@@ -323,6 +332,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getConversationList(int page, int size, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         indexConversation = 0;
@@ -370,6 +380,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void deleteConversation(String conversationID, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         conversationManager.deleteConversation(conversationID, new V2TIMCallback() {
@@ -388,6 +399,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void getGroupMemberList(String groupID, int page, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         groupManager.getGroupMemberList(groupID, page, V2TIMGroupMemberFullInfo.V2TIM_GROUP_MEMBER_FILTER_ALL, new V2TIMValueCallback<V2TIMGroupMemberInfoResult>() {
@@ -422,6 +434,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendC2CTextMessage(String text, String userID, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         manager.sendC2CTextMessage(text, userID, new V2TIMValueCallback<V2TIMMessage>() {
@@ -445,6 +458,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendC2CCustomMessage(String userID, ReadableMap params, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         String customData = params.toString();
@@ -472,6 +486,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendImageMessage(String userID, String imagePath, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         messageManager.sendMessage(messageManager.createImageMessage(imagePath), userID, null, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
@@ -500,6 +515,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendSoundMessage(String userID, String soundPath, int duration, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         messageManager.sendMessage(messageManager.createSoundMessage(soundPath, duration), userID, null, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
@@ -528,6 +544,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendGroupTextMessage(String text, String groupID, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         manager.sendGroupTextMessage(text, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, new V2TIMValueCallback<V2TIMMessage>() {
@@ -551,6 +568,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendGroupAtTextMessage(String text, String groupID, ReadableArray userID_userName, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         List<String> atList = new ArrayList<>();
@@ -583,6 +601,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendGroupCustomMessage(String groupID, ReadableMap params, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         String customData = params.toString();
@@ -610,6 +629,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendGroupImageMessage(String groupID, String imagePath, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         messageManager.sendMessage(messageManager.createImageMessage(imagePath), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
@@ -638,6 +658,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void sendGroupSoundMessage(String groupID, String soundPath, int duration, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         messageManager.sendMessage(messageManager.createSoundMessage(soundPath, duration), null, groupID, V2TIMMessage.V2TIM_PRIORITY_DEFAULT, false, null, new V2TIMSendCallback<V2TIMMessage>() {
@@ -666,6 +687,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void joinGroup(String groupID, String msg, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         manager.joinGroup(groupID, msg, new V2TIMCallback() {
@@ -684,6 +706,7 @@ public class TencentImModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void quitGroup(String groupID, Promise promise) {
         if (manager == null) {
+            promise.reject("404", "manager");
             return;
         }
         manager.quitGroup(groupID, new V2TIMCallback() {
@@ -996,8 +1019,6 @@ public class TencentImModule extends ReactContextBaseJavaModule {
             cb.onSuccess(map);
         }
     }
-
-    ;
 
     public interface MapCallback {
         void onSuccess(WritableMap map);
