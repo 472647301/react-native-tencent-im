@@ -253,6 +253,14 @@ RCT_EXPORT_METHOD(getConversationList:(uint64_t)page
     indexConversation = 0;
     [_manager getConversationList:page count:size succ:^(NSArray<V2TIMConversation *> *list, uint64_t nextSeq, BOOL isFinished) {
         NSMutableArray *msgArr = [[NSMutableArray alloc] init];
+        if ([list count] == 0) {
+            resolve(@{
+                @"page": @(nextSeq),
+                @"is_finished": @(isFinished),
+                @"data": msgArr
+            });
+            return;
+        }
         for (V2TIMConversation *item in list) {
             [self parseMessage:item.lastMessage isDownload:YES key:[item.lastMessage.msgID stringByAppendingString: @"ConversationList"] succ:^(NSDictionary *map) {
                 [msgArr addObject:@{
