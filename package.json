@@ -1,7 +1,7 @@
 {
   "name": "@byron-react-native/tencent-im",
   "title": "React Native Tencent Im",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "React Native Tencent Im",
   "main": "index.js",
   "files": [
