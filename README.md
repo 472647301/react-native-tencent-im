@@ -1,5 +1,9 @@
 # react-native-tencent-im
 
+# ⚠️ Note
+_此仓库已停止开发维护，请使用官方仓库[https://github.com/TencentCloud/TIMSDK](https://github.com/TencentCloud/TIMSDK/tree/master/ReactNative/IMSDK/react-native-tim-js)_
+
+
 ## Getting started
 
 `$ npm install @byron-react-native/tencent-im --save`
